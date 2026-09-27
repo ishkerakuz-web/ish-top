@@ -1,0 +1,25 @@
+{
+  "name": "job-platform",
+  "private": true,
+  "version": "0.3.0",
+  "description": "ISH BOR! — ish qidirish platformasi (Vike SSR + Fastify + MongoDB)",
+  "scripts": {
+    "install:all": "npm --prefix apps/api install && npm --prefix apps/web install",
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "start:api": "npm --prefix apps/api start",
+    "start:web": "npm --prefix apps/web start",
+    "build": "npm --prefix apps/api run build && npm --prefix apps/web run build",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "typecheck": "npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck",
+    "test:e2e": "npm --prefix apps/api run test:e2e",
+    "db:generate": "npm --prefix apps/api run prisma:generate",
+    "db:push": "npm --prefix apps/api run prisma:push",
+    "db:studio": "npm --prefix apps/api run prisma:studio",
+    "db:seed": "npm --prefix apps/api run prisma:seed",
+    "db:demo": "npm --prefix apps/api run seed:demo --",
+    "push:keys": "npm --prefix apps/api run push:keys",
+    "alerts:run": "npm --prefix apps/api run alerts:run"
+  }
+}

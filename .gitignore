@@ -1,0 +1,21 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+pnpm-lock.yaml
+.turbo
+.claude/settings.local.json
+/apps/web/dist
+/apps/api/dist
+/apps/web/.vike
+/apps/api/uploads
+
+# Mahalliy vosita fayllari (loyihaga aloqasi yo'q)
+.freebuff/
+
+# Deploy vositalari
+.vercel
+.railway

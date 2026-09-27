@@ -1,0 +1,1071 @@
+// ============================================================
+// Ish Qidirish Platformasi — Prisma Schema (MongoDB)
+// Arxitektura hujjatining 8-bo'limiga (DB sxemasi) asoslangan
+//
+// Eslatma: MongoDB'da SQL ma'nosidagi migratsiya yo'q. Sxema
+// `prisma db push` bilan qo'llanadi — u kolleksiya va indekslarni
+// yaratadi/yangilaydi. Shuning uchun `prisma/migrations/` papkasi yo'q.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// Enumlar
+// ------------------------------------------------------------
+
+// `admin` — SUPER_ADMIN: butun admin panel, jamoa va maqolalar. Kontent rollari
+// (`content_editor`, `content_author`) faqat taklif orqali ochiladi — ochiq
+// ro'yxatdan o'tishda tanlab bo'lmaydi va faqat maqolalar bo'limiga kiradi.
+enum UserRole {
+  job_seeker
+  employer
+  admin
+  content_editor
+  content_author
+  // Moderator: vakansiya, sharh, kompaniya tasdig'i va murojaatlar. Foydalanuvchi bloklash, rollar,
+  // to'lovlar, ommaviy xabar va maqolalar — yo'q. Faqat jamoa taklifi orqali ochiladi.
+  moderator
+}
+
+// Maqola hayot sikli: muallif qoralama yozadi -> ko'rib chiqishga yuboradi ->
+// muharrir chop etadi -> keyin arxivlanishi mumkin. Saytda FAQAT `published`.
+enum ArticleStatus {
+  draft
+  in_review
+  published
+  archived
+}
+
+// Qat'iy ro'yxat — nomlari uch tilda i18n'da (to'qima kategoriya yaratilmaydi).
+enum ArticleCategory {
+  career
+  resume
+  interview
+  salary
+  job_search
+  tips
+}
+
+enum CompanyMemberRole {
+  owner
+  recruiter
+}
+
+enum ResumeStatus {
+  draft
+  published
+  hidden
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  remote
+  shift
+}
+
+enum ScheduleType {
+  five_two // 5/2
+  two_two // 2/2
+  vahta
+  gibkiy
+  smenniy
+}
+
+// Ish joylashuvi. Masofaviy bo'lsa hudud ixtiyoriy (API qoidasi).
+enum WorkplaceType {
+  office
+  hybrid
+  remote
+}
+
+enum ExperienceRequired {
+  none
+  one_to_three
+  three_to_six
+  six_plus
+}
+
+enum SalaryType {
+  gross
+  net
+}
+
+enum VacancyStatus {
+  draft
+  moderation
+  active
+  archived
+  rejected
+}
+
+enum ApplicationSource {
+  site
+  telegram
+}
+
+enum ApplicationStatus {
+  sent
+  viewed
+  invited
+  rejected
+  accepted
+}
+
+enum NotificationType {
+  new_application
+  application_status_changed
+  new_vacancy_match
+  system
+}
+
+enum NotificationChannel {
+  email
+  push
+  in_app
+  telegram
+}
+
+enum SavedSearchFrequency {
+  instant
+  daily
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+}
+
+enum PaymentProvider {
+  payme
+  click
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+// ------------------------------------------------------------
+// Foydalanuvchi va profil
+// ------------------------------------------------------------
+
+model User {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  email                 String    @unique
+  phone                 String?
+  passwordHash          String    @map("password_hash")
+  role                  UserRole
+  isEmailVerified       Boolean   @default(false) @map("is_email_verified")
+  isPhoneVerified       Boolean   @default(false) @map("is_phone_verified")
+  isBlocked             Boolean   @default(false) @map("is_blocked")
+  // Seans versiyasi: logout, bloklash va rol o'zgarishida oshadi — eski refresh tokenlar bekor bo'ladi.
+  // Ixtiyoriy (null = 0): mavjud hujjatlar migratsiyasiz ishlaydi.
+  tokenVersion          Int?      @map("token_version")
+  // MongoDB'da unique indeks `null` qiymatlarni ham teng deb biladi, shuning
+  // uchun bu maydon unique EMAS (bog'lanmagan foydalanuvchilarda null bo'ladi
+  // va ular bir-biriga to'qnashardi). Yagonalikni kod ta'minlaydi: tasdiqlash
+  // paytida `telegramOwner()` boshqa hisobni tekshiradi (audit R3, D-043).
+  telegramChatId        String?   @map("telegram_chat_id")
+  // audit R3, D-047: zaxira telefon — faqat Telegram orqali tasdiqlangandan keyin yoziladi.
+  // Barcha maydonlar ixtiyoriy: eski hujjatlar backfillsiz ishlaydi (D-067).
+  backupPhone           String?   @map("backup_phone")
+  backupPhoneVerifiedAt DateTime? @map("backup_phone_verified_at")
+  backupTelegramId      String?   @map("backup_telegram_id")
+  phoneVerifiedAt       DateTime? @map("phone_verified_at")
+  passwordChangedAt     DateTime? @map("password_changed_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  jobSeekerProfile      JobSeekerProfile?
+  ownedCompanies        Company[]                  @relation("CompanyOwner")
+  companyMembers        CompanyMember[]
+  applications          Application[]
+  favorites             Favorite[]
+  savedCompanies        SavedCompany[]
+  savedSearches         SavedSearch[]
+  notifications         Notification[]
+  notificationPrefs     NotificationPreference[]
+  articles              Article[]
+  companyReviews        CompanyReview[]
+  statusChanges         ApplicationStatusHistory[] @relation("ChangedBy")
+  sentMessages          Message[]
+  employerConversations Conversation[]             @relation("EmployerConversations")
+  seekerConversations   Conversation[]             @relation("SeekerConversations")
+  ratingsGiven          PeerRating[]               @relation("RatingsGiven")
+  ratingsReceived       PeerRating[]               @relation("RatingsReceived")
+  pushSubscriptions     PushSubscription[]
+  staffProfile          StaffProfile?
+  staffInvitesSent      StaffInvite[]              @relation("StaffInvitesSent")
+
+  @@index([telegramChatId])
+  // audit R3, D-043 / db-perf-2: telefon bo'yicha tiklash qidiruvi va identity tekshiruvi indeksli
+  @@index([phone])
+  @@index([backupPhone])
+  @@index([backupTelegramId])
+  @@index([role])
+  // audit R3, gap1-8 / scale-10k-3: bloklangan hisoblar ro'yxati (kompaniyalar katalogi va
+  // nomzodlar bazasi uni har so'rovda oldindan oladi) indeks bo'yicha o'qiladi
+  @@index([isBlocked])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model JobSeekerProfile {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @unique @map("user_id") @db.ObjectId
+  firstName       String    @map("first_name")
+  lastName        String    @map("last_name")
+  birthDate       DateTime? @map("birth_date")
+  gender          String?
+  avatarUrl       String?   @map("avatar_url")
+  headline        String?
+  resumeUrl       String?   @map("resume_url")
+  additionalPhone String?   @map("additional_phone")
+  regionId        String?   @map("region_id") @db.ObjectId
+  isOpenToWork    Boolean   @default(true) @map("is_open_to_work")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  region  Region?  @relation(fields: [regionId], references: [id])
+  resumes Resume[]
+
+  @@index([regionId])
+  @@map("job_seeker_profiles")
+}
+
+// ------------------------------------------------------------
+// Rezyume
+// ------------------------------------------------------------
+
+model Resume {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  jobSeekerId     String           @map("job_seeker_id") @db.ObjectId
+  title           String
+  summary         String?
+  desiredSalary   Int?             @map("desired_salary")
+  currency        String?          @default("UZS")
+  employmentTypes EmploymentType[] @map("employment_types")
+  status          ResumeStatus     @default(draft)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  jobSeeker    JobSeekerProfile   @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  experience   ResumeExperience[]
+  education    ResumeEducation[]
+  skills       ResumeSkill[]
+  applications Application[]
+
+  @@index([jobSeekerId])
+  @@index([status])
+  @@map("resumes")
+}
+
+model ResumeExperience {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  resumeId    String    @map("resume_id") @db.ObjectId
+  companyName String    @map("company_name")
+  position    String
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  isCurrent   Boolean   @default(false) @map("is_current")
+  description String?
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("resume_experience")
+}
+
+model ResumeEducation {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  resumeId    String  @map("resume_id") @db.ObjectId
+  institution String
+  degree      String?
+  field       String?
+  startYear   Int     @map("start_year")
+  endYear     Int?    @map("end_year")
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("resume_education")
+}
+
+model ResumeSkill {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  resumeId  String @map("resume_id") @db.ObjectId
+  skillName String @map("skill_name")
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("resume_skills")
+}
+
+// ------------------------------------------------------------
+// Kompaniya
+// ------------------------------------------------------------
+
+model Company {
+  id                      String    @id @default(auto()) @map("_id") @db.ObjectId
+  ownerUserId             String    @map("owner_user_id") @db.ObjectId
+  name                    String
+  legalName               String?   @map("legal_name")
+  stir                    String?
+  slug                    String    @unique
+  logoUrl                 String?   @map("logo_url")
+  description             String?
+  website                 String?
+  industryId              String?   @map("industry_id")
+  industry                String?
+  employeeCount           String?   @map("employee_count")
+  foundedYear             Int?      @map("founded_year")
+  // Ofis/jamoa rasmlari (to'liq URL yoki /uploads/...). Bo'sh bo'lsa vakansiya
+  // sahifasidagi "Kompaniya rasmlari" bloki umuman chiqmaydi.
+  images                  String[]  @default([])
+  regionId                String?   @map("region_id") @db.ObjectId
+  isVerified              Boolean   @default(false) @map("is_verified")
+  // Tasdiq so'rovi (ish beruvchi yuridik nom va STIR bilan yuboradi). Admin qarori bilan tozalanadi.
+  verificationRequestedAt DateTime? @map("verification_requested_at")
+  // Oxirgi rad etish izohi (ish beruvchiga ko'rinadi)
+  verificationNote        String?   @map("verification_note")
+  subscriptionPlanId      String?   @map("subscription_plan_id") @db.ObjectId
+  subscriptionExpiresAt   DateTime? @map("subscription_expires_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  owner            User              @relation("CompanyOwner", fields: [ownerUserId], references: [id])
+  region           Region?           @relation(fields: [regionId], references: [id])
+  subscriptionPlan SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])
+  members          CompanyMember[]
+  vacancies        Vacancy[]
+  reviews          CompanyReview[]
+  payments         Payment[]
+  conversations    Conversation[]
+  savedBy          SavedCompany[]
+
+  @@index([ownerUserId])
+  @@index([regionId])
+  @@index([subscriptionPlanId])
+  @@map("companies")
+}
+
+model CompanyMember {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String            @map("company_id") @db.ObjectId
+  userId    String            @map("user_id") @db.ObjectId
+  role      CompanyMemberRole @default(recruiter)
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_members")
+}
+
+// ------------------------------------------------------------
+// Katalog: kasblar va geografiya
+// ------------------------------------------------------------
+
+model VacancyCategory {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  parentId String? @map("parent_id") @db.ObjectId
+  name     String
+  slug     String  @unique
+
+  parent    VacancyCategory?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  VacancyCategory[] @relation("CategoryTree")
+  vacancies Vacancy[]
+
+  @@map("vacancy_categories")
+}
+
+model Region {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  parentId String? @map("parent_id") @db.ObjectId
+  name     String
+  slug     String  @unique
+
+  parent            Region?            @relation("RegionTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children          Region[]           @relation("RegionTree")
+  vacancies         Vacancy[]
+  companies         Company[]
+  jobSeekerProfiles JobSeekerProfile[]
+
+  @@map("regions")
+}
+
+// ------------------------------------------------------------
+// Vakansiya
+// ------------------------------------------------------------
+
+model Vacancy {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId             String             @map("company_id") @db.ObjectId
+  title                 String
+  slug                  String             @unique
+  description           String
+  requirements          String?
+  conditions            String?
+  categoryId            String?            @map("category_id") @db.ObjectId
+  regionId              String?            @map("region_id") @db.ObjectId
+  address               String?
+  latitude              Float?
+  longitude             Float?
+  // Ish joyi rasmlari (to'liq URL yoki /uploads/...). Bo'sh bo'lsa galereya chiqmaydi.
+  images                String[]           @default([])
+  employmentType        EmploymentType     @map("employment_type")
+  scheduleType          ScheduleType?      @map("schedule_type")
+  // Eski yozuvlarda bo'sh bo'lishi mumkin (migratsiyasiz); yangi va tahrirlangan e'lonlarda majburiy (API)
+  workplaceType         WorkplaceType?     @map("workplace_type")
+  experienceRequired    ExperienceRequired @default(none) @map("experience_required")
+  salaryMin             Int?               @map("salary_min")
+  salaryMax             Int?               @map("salary_max")
+  currency              String             @default("UZS")
+  salaryType            SalaryType?        @map("salary_type")
+  isSalaryHidden        Boolean            @default(false) @map("is_salary_hidden")
+  applyWithoutResume    Boolean            @default(false) @map("apply_without_resume")
+  // Ish beruvchining ixtiyoriy bog'lanish yo'llari — vakansiya sahifasida ko'rsatiladi
+  contactEmail          String?            @map("contact_email")
+  contactTelegram       String?            @map("contact_telegram")
+  contactPhone          String?            @map("contact_phone")
+  status                VacancyStatus      @default(draft)
+  isUrgent              Boolean            @default(false) @map("is_urgent")
+  isPremium             Boolean            @default(false) @map("is_premium")
+  rejectionReason       String?            @map("rejection_reason")
+  // Admin yopgan e'lon (arxiv, rad etish, bloklash yoki rol o'zgarishi): ish beruvchi qayta faollashtira olmaydi (audit R3, D-070)
+  adminArchivedAt       DateTime?          @map("admin_archived_at")
+  // Moderatsiya navbatiga tushgan vaqt: admin shu paytdan boshlab MODERATION_AUTO_APPROVE_HOURS ichida
+  // qaror qilmasa, e'lon avtomatik faollashadi. Eski hujjatlarda yo'q — `updatedAt` zaxira sifatida olinadi.
+  moderationSubmittedAt DateTime?          @map("moderation_submitted_at")
+  // Admin emas, muddat tugagani uchun avtomatik tasdiqlangan (admin keyin qayta ko'rib chiqishi uchun belgi)
+  autoApprovedAt        DateTime?          @map("auto_approved_at")
+  // Avto-tasdiq qoidadan o'tmay to'xtaganda ish beruvchiga "to'ldiring" xabari bir marta yuboriladi
+  moderationNudgedAt    DateTime?          @map("moderation_nudged_at")
+  publishedAt           DateTime?          @map("published_at")
+  expiresAt             DateTime?          @map("expires_at")
+  viewsCount            Int                @default(0) @map("views_count")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category     VacancyCategory? @relation(fields: [categoryId], references: [id])
+  region       Region?          @relation(fields: [regionId], references: [id])
+  applications Application[]
+  favorites    Favorite[]
+
+  @@index([status, publishedAt])
+  // Avto-tasdiq sweep'i: moderatsiyadagi e'lonlar navbatga tushgan vaqti bo'yicha
+  @@index([status, moderationSubmittedAt])
+  // Asosiy ro'yxat saralashi ("Eng dolzarb": premium, keyin sana) indeks bo'yicha
+  @@index([status, isPremium, publishedAt])
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([categoryId])
+  @@index([regionId])
+  // Audit R3 (db-perf-4, scale-10k-10): saralash oxirida `id` turadi (sahifalar orasida
+  // takror yoki tushib qolish bo'lmasin), yuqoridagi indekslarda esa `id` yo'q — shuning
+  // uchun MongoDB har sahifada butun mos to'plamni xotirada saralardi. Quyidagi indekslar
+  // saralash kalitini to'liq takrorlaydi (qo'shimcha, eskilari o'z joyida qoladi).
+  // "Eng dolzarb" (relevance): premium, sana, id
+  @@index([status, isPremium, publishedAt, id])
+  // "Yangi qo'shilgan" (date)
+  @@index([status, publishedAt, id])
+  // "Mashhurligi bo'yicha" (popular) — ilgari umuman indekssiz edi
+  @@index([status, viewsCount, publishedAt, id])
+  // "Maosh bo'yicha" — maoshi ko'rsatilgan bo'lak (premium, maosh, id)
+  @@index([status, isPremium, salaryMin, id])
+  // O'xshash vakansiyalar: soha + holat filtri va sana saralashi bitta indeksda (audit R3, scale-10k-11)
+  @@index([categoryId, status, publishedAt, id])
+  // O'xshashlarning zaxira so'rovi va kompaniya sahifasidagi e'lonlar ro'yxati
+  @@index([companyId, status, publishedAt, id])
+  @@map("vacancies")
+}
+
+// ------------------------------------------------------------
+// Ariza
+// ------------------------------------------------------------
+
+model Application {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  vacancyId   String            @map("vacancy_id") @db.ObjectId
+  jobSeekerId String            @map("job_seeker_id") @db.ObjectId
+  resumeId    String?           @map("resume_id") @db.ObjectId
+  coverLetter String?           @map("cover_letter")
+  source      ApplicationSource @default(site)
+  status      ApplicationStatus @default(sent)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  vacancy       Vacancy                    @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  jobSeeker     User                       @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  resume        Resume?                    @relation(fields: [resumeId], references: [id])
+  statusHistory ApplicationStatusHistory[]
+
+  // Bir nomzod bir vakansiyaga faqat bitta ariza yuboradi (kodda ham
+  // tekshiriladi, indeks poyga holatini ham yopadi).
+  @@unique([vacancyId, jobSeekerId])
+  @@index([jobSeekerId])
+  @@index([resumeId])
+  // Bosh sahifa "bugungi arizalar", admin dinamikasi; header "yangi arizalar" soni
+  @@index([createdAt])
+  @@index([vacancyId, status])
+  // Ish beruvchi arizalari: vacancyId IN [...] + createdAt bo'yicha saralangan sahifa (audit R3 ikkinchi audit, backend-19)
+  @@index([vacancyId, createdAt])
+  @@map("applications")
+}
+
+model ApplicationStatusHistory {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId String             @map("application_id") @db.ObjectId
+  oldStatus     ApplicationStatus? @map("old_status")
+  newStatus     ApplicationStatus  @map("new_status")
+  changedBy     String?            @map("changed_by") @db.ObjectId
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  changedByUser User?       @relation("ChangedBy", fields: [changedBy], references: [id])
+
+  @@index([applicationId])
+  @@index([changedBy])
+  @@map("application_status_history")
+}
+
+// ------------------------------------------------------------
+// Chat (to'g'ridan-to'g'ri: ish beruvchi <-> nomzod, juftlik bo'yicha)
+// ------------------------------------------------------------
+
+model Conversation {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  employerUserId String   @map("employer_user_id") @db.ObjectId
+  seekerUserId   String   @map("seeker_user_id") @db.ObjectId
+  companyId      String?  @map("company_id") @db.ObjectId
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  employer User         @relation("EmployerConversations", fields: [employerUserId], references: [id], onDelete: Cascade)
+  seeker   User         @relation("SeekerConversations", fields: [seekerUserId], references: [id], onDelete: Cascade)
+  company  Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  messages Message[]
+  ratings  PeerRating[]
+
+  @@unique([employerUserId, seekerUserId])
+  @@index([seekerUserId])
+  @@index([companyId])
+  @@map("conversations")
+}
+
+// O'zaro baho: suhbat doirasida ikkala tomon ham yozgan bo'lsagina qo'yiladi
+// (server tekshiradi). Har bir suhbatda har bir tomon bitta baho beradi.
+model PeerRating {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String   @map("conversation_id") @db.ObjectId
+  raterUserId    String   @map("rater_user_id") @db.ObjectId
+  ratedUserId    String   @map("rated_user_id") @db.ObjectId
+  score          Int
+  comment        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  rater        User         @relation("RatingsGiven", fields: [raterUserId], references: [id], onDelete: Cascade)
+  rated        User         @relation("RatingsReceived", fields: [ratedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, raterUserId])
+  @@index([ratedUserId])
+  @@index([raterUserId])
+  @@map("peer_ratings")
+}
+
+model Message {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String   @map("conversation_id") @db.ObjectId
+  senderId       String   @map("sender_id") @db.ObjectId
+  body           String
+  isRead         Boolean  @default(false) @map("is_read")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  // O'qilmagan xabarlar soni (header, suhbatlar ro'yxati)
+  @@index([conversationId, isRead])
+  @@map("messages")
+}
+
+// ------------------------------------------------------------
+// Sevimlilar va saqlangan qidiruv
+// ------------------------------------------------------------
+
+model Favorite {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @map("user_id") @db.ObjectId
+  vacancyId String   @map("vacancy_id") @db.ObjectId
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vacancy Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vacancyId])
+  @@index([vacancyId])
+  @@map("favorites")
+}
+
+// Saqlangan (kuzatilayotgan) kompaniyalar — /companies sahifasidagi yurakcha
+model SavedCompany {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @map("user_id") @db.ObjectId
+  companyId String   @map("company_id") @db.ObjectId
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([companyId])
+  @@map("saved_companies")
+}
+
+model SavedSearch {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String               @map("user_id") @db.ObjectId
+  name               String
+  queryParams        Json                 @map("query_params")
+  emailAlertsEnabled Boolean              @default(true) @map("email_alerts_enabled")
+  frequency          SavedSearchFrequency @default(daily)
+  lastNotifiedAt     DateTime?            @map("last_notified_at")
+  createdAt          DateTime             @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+// ------------------------------------------------------------
+// Notification
+// ------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @map("user_id") @db.ObjectId
+  type      NotificationType
+  title     String
+  body      String
+  payload   Json?
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  // Ro'yxat: foydalanuvchi bo'yicha eng yangilari
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String              @map("user_id") @db.ObjectId
+  notificationType NotificationType    @map("notification_type")
+  channel          NotificationChannel
+  isEnabled        Boolean             @default(true) @map("is_enabled")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationType, channel])
+  @@map("notification_preferences")
+}
+
+// ------------------------------------------------------------
+// Maqolalar (SEO content) va kontent jamoasi
+// ------------------------------------------------------------
+
+model Article {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  slug            String           @unique
+  // Slug o'zgarganda eskilari shu yerda qoladi — eski havolalar 301 bilan yangisiga o'tadi
+  previousSlugs   String[]         @default([]) @map("previous_slugs")
+  excerpt         String?
+  // Markdown'ning cheklangan to'plami (sarlavha, ro'yxat, iqtibos, havola, rasm).
+  // HTML sifatida ishlanmaydi — saytda React elementlariga aylantiriladi.
+  content         String
+  coverImageUrl   String?          @map("cover_image_url")
+  category        ArticleCategory?
+  tags            String[]         @default([])
+  authorId        String?          @map("author_id") @db.ObjectId
+  status          ArticleStatus    @default(draft)
+  // Muharrir qoralamaga qaytarganda yozgan izohi (muallifga ko'rinadi)
+  reviewNote      String?          @map("review_note")
+  metaTitle       String?          @map("meta_title")
+  metaDescription String?          @map("meta_description")
+  // Saqlashda matndan hisoblanadi; matn bo'sh bo'lsa null ("0 daqiqa" chiqmaydi)
+  readingMinutes  Int?             @map("reading_minutes")
+  viewsCount      Int              @default(0) @map("views_count")
+  helpfulYes      Int              @default(0) @map("helpful_yes")
+  helpfulNo       Int              @default(0) @map("helpful_no")
+  // Qidiruv uchun normallashtirilgan matn: sarlavha, qisqa tavsif, teglar, kategoriya nomlari
+  searchText      String           @default("") @map("search_text")
+  publishedAt     DateTime?        @map("published_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  author User? @relation(fields: [authorId], references: [id])
+
+  @@index([status, publishedAt])
+  @@index([status, category])
+  @@index([authorId])
+  @@index([previousSlugs])
+  @@map("articles")
+}
+
+// Kontent jamoasi a'zosining maqoladagi "muallif belgisi" (ism, lavozim, avatar).
+// Nomzod/ish beruvchi profillaridan alohida — jamoa a'zosining ochiq profili yo'q.
+model StaffProfile {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String  @unique @map("user_id") @db.ObjectId
+  fullName  String  @map("full_name")
+  position  String?
+  avatarUrl String? @map("avatar_url")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("staff_profiles")
+}
+
+// Jamoaga taklif — faqat SUPER_ADMIN yaratadi. Havola tokeni bazada faqat HASH
+// ko'rinishida saqlanadi: baza sizib chiqsa ham taklif havolasini tiklab bo'lmaydi.
+model StaffInvite {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  email       String
+  role        UserRole
+  tokenHash   String    @unique @map("token_hash")
+  invitedById String    @map("invited_by_id") @db.ObjectId
+  expiresAt   DateTime  @map("expires_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  invitedBy User @relation("StaffInvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([invitedById])
+  @@map("staff_invites")
+}
+
+// ------------------------------------------------------------
+// Kompaniya sharhlari
+// ------------------------------------------------------------
+
+model CompanyReview {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String       @map("company_id") @db.ObjectId
+  userId         String       @map("user_id") @db.ObjectId
+  rating         Int
+  comment        String?
+  status         ReviewStatus @default(pending)
+  // Moderatsiyaga (qayta) yuborilgan vaqt — avto-tasdiq muddati shundan hisoblanadi.
+  // Eski hujjatlarda yo'q — `createdAt` zaxira sifatida olinadi.
+  submittedAt    DateTime?    @map("submitted_at")
+  autoApprovedAt DateTime?    @map("auto_approved_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Bitta foydalanuvchi bitta kompaniyaga bitta sharh qoldiradi
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@index([status])
+  @@index([status, submittedAt])
+  @@map("company_reviews")
+}
+
+// ------------------------------------------------------------
+// Monetizatsiya
+// ------------------------------------------------------------
+
+model SubscriptionPlan {
+  id                   String  @id @default(auto()) @map("_id") @db.ObjectId
+  slug                 String  @unique
+  name                 String
+  price                Int
+  currency             String  @default("UZS")
+  maxActiveVacancies   Int     @map("max_active_vacancies")
+  maxFeaturedVacancies Int     @default(0) @map("max_featured_vacancies")
+  canSearchCandidates  Boolean @default(false) @map("can_search_candidates")
+  isActive             Boolean @default(true) @map("is_active")
+  sortOrder            Int     @default(0) @map("sort_order")
+  features             Json?
+  durationDays         Int     @map("duration_days")
+
+  companies Company[]
+  payments  Payment[]
+
+  @@map("subscription_plans")
+}
+
+model Payment {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  companyId     String          @map("company_id") @db.ObjectId
+  planId        String          @map("plan_id") @db.ObjectId
+  amount        Int
+  status        PaymentStatus   @default(pending)
+  provider      PaymentProvider
+  // Har doim `createCheckout` da beriladi. MongoDB'da unique indeks null
+  // qiymatlarni teng deb bilgani uchun maydon majburiy qilingan.
+  transactionId String          @unique @map("transaction_id")
+  paidAt        DateTime?       @map("paid_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  company Company          @relation(fields: [companyId], references: [id])
+  plan    SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([companyId, status])
+  @@index([planId])
+  @@map("payments")
+}
+
+// ------------------------------------------------------------
+// Brauzer push obunalari (Web Push / VAPID)
+// ------------------------------------------------------------
+
+model PushSubscription {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @map("user_id") @db.ObjectId
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// ------------------------------------------------------------
+// Auth: Telegram challenge'lari, qo'lda tiklash va xavfsizlik jurnali
+// (audit R3 — D-042, D-045, D-049, D-050). Barchasi yangi kolleksiyalar:
+// mavjud ma'lumot o'zgarmaydi (D-067). Bog'lanishlar Prisma relation emas,
+// oddiy ObjectId maydonlari — User modeli kengaymaydi.
+// ------------------------------------------------------------
+
+enum AuthChallengePurpose {
+  telegram_link
+  phone_change
+  backup_phone
+  password_recovery
+  manual_recovery
+}
+
+enum AuthChallengeStatus {
+  pending
+  awaiting_contact
+  verified
+  completed
+  cancelled
+}
+
+model AuthChallenge {
+  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  purpose           AuthChallengePurpose
+  status            AuthChallengeStatus  @default(pending)
+  // Deep-link payload'ining sha256 (hex) qiymati — xom token bazada saqlanmaydi
+  tokenHash         String               @unique @map("token_hash")
+  // null = "decoy" challenge: raqam bo'yicha hisob topilmadi (javob bir xil bo'lishi uchun)
+  userId            String?              @map("user_id") @db.ObjectId
+  recoveryRequestId String?              @map("recovery_request_id") @db.ObjectId
+  // "primary" | "backup" — password_recovery uchun qaysi raqam bo'yicha boshlangani
+  phoneKind         String?              @map("phone_kind")
+  telegramUserId    String?              @map("telegram_user_id")
+  // Sayt reset havolasi tokenining sha256 (hex) qiymati
+  resetTokenHash    String?              @map("reset_token_hash")
+  expiresAt         DateTime             @map("expires_at")
+  resetExpiresAt    DateTime?            @map("reset_expires_at")
+  completedAt       DateTime?            @map("completed_at")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  @@index([telegramUserId, status])
+  @@index([userId, purpose, status])
+  @@index([resetTokenHash])
+  @@index([expiresAt])
+  @@map("auth_challenges")
+}
+
+enum RecoveryRequestStatus {
+  pending
+  approved
+  rejected
+  completed
+  expired
+}
+
+model RecoveryRequest {
+  id                String                @id @default(auto()) @map("_id") @db.ObjectId
+  // null — bu email bilan hisob yo'q (so'rov yuboruvchiga hech qachon aytilmaydi)
+  userId            String?               @map("user_id") @db.ObjectId
+  email             String
+  fullName          String                @map("full_name")
+  details           String
+  contact           String?
+  // Bir marta ko'rsatiladigan so'rov kodining sha256 (hex) qiymati
+  codeHash          String                @unique @map("code_hash")
+  status            RecoveryRequestStatus @default(pending)
+  reviewedById      String?               @map("reviewed_by_id") @db.ObjectId
+  reviewNote        String?               @map("review_note")
+  reviewedAt        DateTime?             @map("reviewed_at")
+  // Tasdiqlangan so'rov 72 soat davomida davom ettiriladi
+  continueExpiresAt DateTime?             @map("continue_expires_at")
+  completedAt       DateTime?             @map("completed_at")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("recovery_requests")
+}
+
+enum SecurityEventType {
+  phone_verified
+  phone_changed
+  backup_phone_added
+  backup_phone_removed
+  telegram_linked
+  telegram_unlinked
+  recovery_started
+  recovery_verified
+  recovery_completed
+  sessions_invalidated
+  manual_recovery_requested
+  manual_recovery_approved
+  manual_recovery_rejected
+  user_blocked
+  user_unblocked
+  role_changed
+}
+
+model SecurityEvent {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?           @map("user_id") @db.ObjectId
+  actorId   String?           @map("actor_id") @db.ObjectId
+  type      SecurityEventType
+  // FAQAT maxfiy bo'lmagan ma'lumot: niqoblangan telefon, maqsad, so'rov ID, sabab.
+  // Parol, token, hash va xabar matni hech qachon yozilmaydi (D-050).
+  meta      Json?
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@map("security_events")
+}
+
+// ------------------------------------------------------------
+// Moderatsiya jurnali: vakansiya, sharh, kompaniya va murojaatlar bo'yicha har bir qaror.
+// `actorId` null — tizim (masalan, 24 soatlik avto-tasdiq).
+// ------------------------------------------------------------
+
+enum ModerationEntity {
+  vacancy
+  review
+  company
+  ticket
+}
+
+model ModerationEvent {
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  entityType ModerationEntity @map("entity_type")
+  entityId   String           @map("entity_id") @db.ObjectId
+  // approved | rejected | archived | premium_on | premium_off | reviewed | auto_approved |
+  // auto_skipped | deleted | pending | verified | unverified | verification_rejected | ticket_status | ticket_reply
+  action     String
+  actorId    String?          @map("actor_id") @db.ObjectId
+  reason     String?
+  // Qisqa kontekst: sarlavha, kompaniya nomi, eski/yangi holat (maxfiy ma'lumotsiz)
+  meta       Json?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@map("moderation_events")
+}
+
+// ------------------------------------------------------------
+// Murojaatlar: aloqa formasi va vakansiya shikoyatlari. Telegram faqat qo'shimcha kanal —
+// xabar avval bazaga yoziladi, admin panelda ko'rib chiqiladi.
+// ------------------------------------------------------------
+
+enum SupportTicketKind {
+  contact
+  vacancy_report
+}
+
+enum SupportTicketStatus {
+  open
+  in_progress
+  resolved
+  dismissed
+}
+
+model SupportTicket {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  kind        SupportTicketKind
+  status      SupportTicketStatus @default(open)
+  // contact: general | technical | ...; vacancy_report: outdated | wrong | fraud | other
+  subject     String?
+  name        String?
+  email       String?
+  message     String
+  userId      String?             @map("user_id") @db.ObjectId
+  vacancyId   String?             @map("vacancy_id") @db.ObjectId
+  adminNote   String?             @map("admin_note")
+  handledById String?             @map("handled_by_id") @db.ObjectId
+  handledAt   DateTime?           @map("handled_at")
+  // Admin emailga javob yuborgan vaqt
+  repliedAt   DateTime?           @map("replied_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([kind, status, createdAt])
+  @@index([vacancyId, status])
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+// Ommaviy xabarlar tarixi (kim, kimga, qancha yetkazildi)
+model Broadcast {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  body       String
+  audience   String
+  url        String?
+  actorId    String    @map("actor_id") @db.ObjectId
+  total      Int
+  delivered  Int       @default(0)
+  // running | done | failed
+  status     String    @default("running")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  finishedAt DateTime? @map("finished_at")
+
+  @@index([createdAt])
+  @@map("broadcasts")
+}
