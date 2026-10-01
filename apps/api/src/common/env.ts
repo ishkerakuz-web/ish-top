@@ -24,6 +24,17 @@ function isPlaceholderSecret(value: string): boolean {
   return PLACEHOLDER_SECRET_MARKERS.some((marker) => normalized.includes(marker));
 }
 
+/**
+ * Manzil oxiridagi "/" ni olib tashlaydi.
+ *
+ * CORS solishtiruvi aynan satr bo'yicha ketadi, brauzer esa `Origin` ni doim
+ * slashsiz yuboradi. Qiymatni bir joyda normallashtirib, "https://sayt.uz/"
+ * deb yozilgan sozlama butun saytni bloklab qo'yishining oldini olamiz.
+ */
+function stripTrailingSlash(value: string): string {
+  return value.trim().replace(/\/+$/, "");
+}
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   // MongoDB ulanish satri (Atlas: mongodb+srv://...). Tranzaksiyalar uchun
@@ -43,8 +54,13 @@ const envSchema = z.object({
   // Railway PORT ni o'zi beradi — qo'lda o'rnatmang.
   PORT: z.coerce.number().default(3000),
   // Frontend manzili: CORS uchun ham, xat/Telegram havolalari uchun ham.
-  // Vercel'dagi asosiy domen (masalan https://ishbor.vercel.app).
-  WEB_ORIGIN: z.string().default("http://localhost:5173"),
+  // Asosiy domen (masalan https://app.ishbor.uz).
+  //
+  // Oxirgi "/" olib tashlanadi: brauzer `Origin` sarlavhasini HECH QACHON slash
+  // bilan yubormaydi, shuning uchun "https://sayt.uz/" deb yozilgan qiymat
+  // ro'yxat bilan solishtirganda mos kelmay, BUTUN saytni CORS bilan bloklab
+  // qo'yardi — xato esa faqat brauzer konsolida ko'rinardi (prodda shunday bo'ldi).
+  WEB_ORIGIN: z.string().default("http://localhost:5173").transform(stripTrailingSlash),
   // CORS uchun qo'shimcha manzillar (vergul bilan). Vercel preview deploylari
   // yoki o'z domeningiz uchun. Masalan: "https://ishbor.uz,https://www.ishbor.uz"
   CORS_EXTRA_ORIGINS: z.string().optional().default(""),
@@ -263,7 +279,7 @@ export const isProd = env.NODE_ENV === "production";
 export const allowedOrigins: string[] = [
   env.WEB_ORIGIN,
   ...env.CORS_EXTRA_ORIGINS.split(",")
-    .map((o) => o.trim())
+    .map((o) => stripTrailingSlash(o.trim()))
     .filter(Boolean),
   ...(isProd ? [] : ["http://localhost:5173", "http://localhost:4173", "http://localhost:3001"]),
 ].filter((v, i, all) => v && all.indexOf(v) === i);

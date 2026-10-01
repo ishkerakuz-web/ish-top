@@ -7,7 +7,11 @@
 // Real backend bilan ishlovchi data qatlami — faqat haqiqiy API'dan o'qiydi
 // (namunaviy/mock ma'lumot ishlatilmaydi). Server o'chiq bo'lsa bo'sh natija qaytadi.
 
-export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+/**
+ * API manzili. Oxiridagi "/" olib tashlanadi — yo'llar ("/api/...") unga
+ * qo'shib yoziladi, aks holda "https://api.sayt.uz//api/vacancies" chiqadi.
+ */
+export const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 /** WebSocket manzili (http -> ws). */
 export const WS_URL = API_URL.replace(/^http/i, "ws");
