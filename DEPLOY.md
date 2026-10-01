@@ -364,6 +364,30 @@ Ikki sabab bo'lishi mumkin:
    Safari/iOS va Brave bunday third-party cookie'ni bloklaydi - custom domen kerak
    (yuqoridagi "TALAB: sayt va API bitta domen ostida bo'lsin", D-076).
 
+**Vercel'da har bir sahifa 500 — `ERR_REQUIRE_ESM` (`@brillout/picocolors`)**
+Logda shunday chiqadi:
+
+```
+Error [ERR_REQUIRE_ESM]: require() of ES Module .../@brillout/picocolors/dist/picocolors.js
+from .../react-streaming/dist/cjs/utils/assert.js not supported
+```
+
+Sabab: `react-streaming` ning `exports` xaritasi Node ostida CommonJS nusxani
+tanlaydi, u esa faqat-ESM bo'lgan `@brillout/picocolors@1.0.23+` ni `require()`
+qiladi. Node 22.12 dan boshlab `require(ESM)` ruxsat etilgan, shuning uchun yangi
+Node'da xato chiqmaydi va muammo lokalda sezilmaydi — eski Node'da esa butun SSR
+yiqiladi (xato sahifasi ham, chunki modul har bir sahifada yuklanadi).
+
+Yechim `apps/web/package.json` da: paket oxirgi CommonJS versiyasiga qotirilgan.
+
+```json
+"overrides": { "@brillout/picocolors": "1.0.22" }
+```
+
+**Buni olib tashlamang**, agar `vike-react` React 19 ga o'tib `react-streaming@0.4+`
+(CJS nusxasi yo'q) ni tortmasa. Hozir loyiha React 18 da, `vike-react@0.6` esa
+React 19 talab qiladi.
+
 **Brauzer konsolida CORS xatosi**
 Railway'dagi `WEB_ORIGIN` sayt manziliga to'liq mos emas. Protokol va domen
 aynan bir xil bo'lishi kerak (`https://`, `www` bor/yo'qligi ham muhim).
