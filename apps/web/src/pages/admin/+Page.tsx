@@ -14,6 +14,7 @@ import {
 } from "../../lib/apiExtra.js";
 import { useAdminResource } from "../../lib/admin/useAdminResource.js";
 import { errorText } from "../../lib/admin/useNotice.js";
+import { Select } from "../../components/Select.js";
 
 /** Admin bosh sahifasi: ko'rsatkichlar, 14 kunlik dinamika, xizmat amallari. */
 export default function Page() {
@@ -369,16 +370,19 @@ function BroadcastForm() {
             <label className="text-xs font-medium text-dusk" htmlFor="bc-role">
               {t.admin.overview.broadcastAudience}
             </label>
-            <select
+            <Select
               id="bc-role"
+              ariaLabel={t.admin.overview.broadcastAudience}
               value={role}
-              onChange={(e) => setRole(e.target.value as typeof role)}
-              className="mt-1 block rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-ink focus:border-signal focus:outline-none"
-            >
-              <option value="all">{t.admin.overview.audienceAll}</option>
-              <option value="job_seeker">{t.admin.overview.audienceSeekers}</option>
-              <option value="employer">{t.admin.overview.audienceEmployers}</option>
-            </select>
+              onChange={(next) => setRole(next as typeof role)}
+              options={[
+                { value: "all", label: t.admin.overview.audienceAll },
+                { value: "job_seeker", label: t.admin.overview.audienceSeekers },
+                { value: "employer", label: t.admin.overview.audienceEmployers },
+              ]}
+              className="mt-1 w-56"
+              buttonClassName="h-10 rounded-xl border border-line bg-surface text-sm text-ink transition-colors hover:border-signal/40"
+            />
           </div>
 
           <button

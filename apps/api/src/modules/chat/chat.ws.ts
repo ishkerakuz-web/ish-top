@@ -5,7 +5,7 @@ import { isObjectId } from "../../common/validation.js";
 import { prisma } from "../../common/prisma.js";
 import { requirePhoneVerified } from "../../common/auth-guard.js";
 import { verifyAccessToken, type AccessTokenPayload } from "../../common/jwt.js";
-import { addSocket, removeSocket, sendToUser } from "../../common/realtime.js";
+import { addSocket, removeSocket, sendToUser, setViewing } from "../../common/realtime.js";
 import { consumeQuota, MINUTE_MS } from "../../common/quota.js";
 import {
   WS_BUCKET_CAPACITY,
@@ -147,6 +147,22 @@ export function chatSocketRoutes(app: FastifyInstance) {
       // ulanish bo'yicha yagona chegara chetlab o'tilardi. Haqiqiy klient 15 daqiqada bir marta yuboradi.
       if (type === "auth") {
         if (allow()) handleAuthFrame(token);
+        return;
+      }
+      /**
+       * `{ type: "view", conversationId }` — klient qaysi yozishmani ochib
+       * turganini aytadi (`null` — hech qaysi: boshqa sahifa yoki varaq yashirilgan).
+       * Shu belgiga qarab yangi xabar uchun qo'ng'iroq bildirishnomasi va Telegram
+       * ogohlantirishi yuboriladimi-yo'qmi hal qilinadi (`chat.service.ts`).
+       *
+       * Bazaga bormaydi, lekin token bucket'dan o'tadi: varaqlar almashganda
+       * kadr tez-tez kelishi mumkin, cheksiz bo'lmasin.
+       */
+      if (type === "view") {
+        if (!allow()) return;
+        if (!(await ready)) return;
+        const next = typeof conversationId === "string" && isObjectId(conversationId) ? conversationId : null;
+        setViewing(userId, ws, next);
         return;
       }
       if (!(await ready)) return;

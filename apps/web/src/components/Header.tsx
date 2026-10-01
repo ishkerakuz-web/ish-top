@@ -37,11 +37,31 @@ export default function Header() {
   const { summary } = useInboxSummary(status === "authed" ? accessToken : null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  /**
+   * Sahifa tepasidami yoki pastga surilganmi.
+   *
+   * Tepada header SHAFFOF bo'ladi va bosh sahifaning jonli foni uning ostidan
+   * uzluksiz o'tadi — ilgari ular ikki alohida qavat bo'lib ko'rinardi (navbar
+   * oq karta, pastida esa birdan gradient boshlanardi).
+   *
+   * Surilgandan keyin qattiq panelga aylanadi. Avval bu yerda `backdrop-blur`
+   * bilan shisha effekt bor edi, lekin hero rasmi o'z qatlamida bo'lgani uchun
+   * Chrome uni blur'lamasdi: panelning yarmidan surat o'tkir ko'rinib,
+   * logoning atrofida esa oq to'rtburchak paydo bo'lardi.
+   */
+  const [scrolled, setScrolled] = useState(false);
   const userRef = useRef<HTMLDivElement>(null);
   const userButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   useClickOutside(userRef, () => setUserOpen(false), userOpen);
 
   // audit R3, D-060 (a11y-ui-2, a11y-ui-9): popover/menyu klaviaturasi —
@@ -184,7 +204,15 @@ export default function Header() {
   // sig'maydi (header viewportdan toshardi) — planshet ixcham menyuni oladi.
   return (
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
-      <div className="mx-auto max-w-7xl rounded-2xl border border-line bg-surface/92 shadow-card backdrop-blur-xl">
+      {/* Ochiq menyu doim shaffofmas: aks holda ro'yxat ostidagi kontent ko'rinib,
+          yozuvlar o'qilmay qolardi. */}
+      <div
+        className={`mx-auto max-w-7xl rounded-2xl border transition-[background-color,border-color,box-shadow] duration-300 ${
+          scrolled || menuOpen || userOpen
+            ? "border-line bg-surface shadow-card"
+            : "border-transparent bg-transparent shadow-none"
+        }`}
+      >
       <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-5">
         <div className="flex min-w-0 items-center gap-8 lg:gap-4 xl:gap-8">
           <a href={l(homeHref)} className="group flex shrink-0 items-center gap-2.5 text-ink">

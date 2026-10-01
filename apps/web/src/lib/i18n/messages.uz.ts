@@ -1677,6 +1677,7 @@ const extra: ExtraMessages = {
 
   // Audit R3, D-059: server bildirishnomalarining tarjima shablonlari (payload.i18n.key).
   notificationTemplates: {
+    "chat.newMessage": { title: "Yangi xabar", body: "Sizga yangi xabar keldi." },
     "application.new": { title: "Yangi ariza", body: "«{vacancyTitle}» vakansiyasiga yangi nomzod ariza yubordi" },
     "application.statusChanged": { title: "Ariza holati o'zgardi", body: "«{vacancyTitle}» bo'yicha: {status}" },
     "alerts.newMatches": { title: "«{searchName}» bo'yicha {count} ta yangi vakansiya", body: "{titles}" },

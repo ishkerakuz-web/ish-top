@@ -833,7 +833,8 @@ export type NotificationTemplateKey =
   | "payment.confirmed"
   | "security.phone_changed"
   | "security.recovery_completed"
-  | "security.sessions_invalidated";
+  | "security.sessions_invalidated"
+  | "chat.newMessage";
 
 /**
  * API javobidagi `error` kodlari (audit R3, i18n-3). Faqat shu kodlar tarjima qilinadi;

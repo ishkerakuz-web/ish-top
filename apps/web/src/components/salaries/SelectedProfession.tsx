@@ -112,14 +112,18 @@ export function SelectedProfession({
 
       <div className="flex shrink-0 flex-col gap-2 md:items-end">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap md:justify-end">
-          <SaveSearchButton
-            params={vacancySearchParams(query)}
-            defaultName={[title, region?.name].filter(Boolean).join(", ")}
-            label={s.selected.save}
-            icon="heart"
-            buttonClassName="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-signal/50 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal sm:w-auto"
-            popoverClassName="left-0 md:left-auto md:right-0"
-          />
+          {/* Saqlash faqat aniq tanlov bo'lganda: "barcha kasblar, butun mamlakat" ni
+              saqlashdan foyda yo'q — u shunchaki maoshlar sahifasining o'zi. */}
+          {filtered && (
+            <SaveSearchButton
+              params={vacancySearchParams(query)}
+              defaultName={[title, region?.name].filter(Boolean).join(", ")}
+              label={s.selected.save}
+              icon="heart"
+              buttonClassName="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-signal/50 hover:text-signal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal sm:w-auto"
+              popoverClassName="left-0 md:left-auto md:right-0"
+            />
+          )}
           <a
             href={l(vacancySearchHref(query))}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-signal px-5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-signal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper"

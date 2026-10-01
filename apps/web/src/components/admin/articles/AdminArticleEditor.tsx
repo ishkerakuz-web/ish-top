@@ -37,6 +37,7 @@ import { AdminArticleStatus } from "./AdminArticleStatus.js";
 import { ContentEditor } from "./ContentEditor.js";
 import { CoverField } from "./CoverField.js";
 import { TagInput } from "./TagInput.js";
+import { Select } from "../../Select.js";
 
 interface EditorForm {
   title: string;
@@ -559,20 +560,18 @@ export function AdminArticleEditor({ articleId }: { articleId: string | null }) 
               <label htmlFor="article-category" className={ADMIN_LABEL}>
                 {f.category}
               </label>
-              <select
+              <Select
                 id="article-category"
+                ariaLabel={f.category}
                 value={form.category}
                 disabled={readOnly}
-                onChange={(ev) => set("category", ev.target.value as ArticleCategory | "")}
-                className={`${ADMIN_INPUT} mt-1.5`}
-              >
-                <option value="">{f.categoryNone}</option>
-                {ARTICLE_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {t.articles.categories[category]}
-                  </option>
-                ))}
-              </select>
+                onChange={(next) => set("category", next as ArticleCategory | "")}
+                options={[
+                  { value: "", label: f.categoryNone },
+                  ...ARTICLE_CATEGORIES.map((category) => ({ value: category, label: t.articles.categories[category] })),
+                ]}
+                buttonClassName={`${ADMIN_INPUT} mt-1.5`}
+              />
             </div>
             <div>
               {editor ? (
@@ -580,22 +579,25 @@ export function AdminArticleEditor({ articleId }: { articleId: string | null }) 
                   <label htmlFor="article-author" className={ADMIN_LABEL}>
                     {f.author}
                   </label>
-                  <select
+                  <Select
                     id="article-author"
+                    ariaLabel={f.author}
                     value={form.authorId}
                     disabled={readOnly}
-                    onChange={(ev) => set("authorId", ev.target.value)}
-                    className={`${ADMIN_INPUT} mt-1.5`}
-                  >
-                    <option value="">{f.authorNone}</option>
-                    {/* Joriy muallif ro'yxatda bo'lmasa ham (faolsizlantirilgan) tanlov yo'qolmasin */}
-                    {article?.author && !authors.some((a) => a.id === article.author!.id) && <option value={article.author.id}>{article.author.name}</option>}
-                    {authors.map((author) => (
-                      <option key={author.id} value={author.id}>
-                        {author.name} · {c.roles[author.role as keyof typeof c.roles] ?? author.role}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(next) => set("authorId", next)}
+                    options={[
+                      { value: "", label: f.authorNone },
+                      // Joriy muallif ro'yxatda bo'lmasa ham (faolsizlantirilgan) tanlov yo'qolmasin
+                      ...(article?.author && !authors.some((a) => a.id === article.author!.id)
+                        ? [{ value: article.author.id, label: article.author.name }]
+                        : []),
+                      ...authors.map((author) => ({
+                        value: author.id,
+                        label: `${author.name} · ${c.roles[author.role as keyof typeof c.roles] ?? author.role}`,
+                      })),
+                    ]}
+                    buttonClassName={`${ADMIN_INPUT} mt-1.5`}
+                  />
                 </>
               ) : (
                 <>

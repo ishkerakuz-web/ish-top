@@ -7,6 +7,7 @@ import { CountUp } from "../../components/CountUp.js";
 import { CategoryCard, CATEGORY_ICONS } from "../../components/CategoryCard.js";
 import { VacancyCard } from "../../components/VacancyCard.js";
 import { CompanyCard } from "../../components/CompanyCard.js";
+import { CompanyLogo } from "../../components/companies/CompanyLogo.js";
 import { useT, useLocale, useHref } from "../../lib/i18n/index.js";
 import { CATEGORIES, CATEGORY_NAMES } from "../../lib/i18n/categories.js";
 import { useRedirectRole } from "../../lib/useRoleGuard.js";
@@ -39,7 +40,12 @@ export default function Page() {
   return (
     <div>
       {/* HERO — tasdiqlangan referens: osmon fon, o'ngda foto, chapda kontent */}
-      <section className="relative overflow-hidden">
+      {/* HEADER OSTIGA CHO'ZILADI: header `sticky` bo'lgani uchun oqimda 76px
+          (h-16 + pt-3) joy egallaydi. Shu balandlikka teskari margin berib,
+          jonli fon sahifaning eng tepasidan boshlanadi — tepada shaffof turgan
+          navbar fonning bir qismiga aylanadi, ikki qavat orasidagi chok yo'qoladi.
+          Ichki `pt` esa kontentni header ostidan chiqarib turadi. */}
+      <section className="relative -mt-[76px] overflow-hidden pt-[76px]">
         <HeroBackdrop />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
           {/* Yuqori qism — foto shu wrapperning pastiga langarlangan */}
@@ -171,19 +177,30 @@ export default function Page() {
                 className="relative z-[2] mb-2 mt-4 animate-fade-up rounded-2xl border border-line bg-surface/95 px-5 pb-5 pt-4 shadow-card backdrop-blur"
               >
                 <p className="mb-3 text-[15px] font-bold text-ink">{t.home.topCompanies}</p>
-                <div className="flex items-stretch gap-2.5 overflow-x-auto pb-0.5">
+                {/* Kartalar ENI QAT'IY: ilgari `flex-1` edi va bitta kompaniya
+                    qolganda u butun qatorni egallab, tugmaga o'xshab ketardi.
+                    Endi ular lenta — nechta bo'lsa ham bir xil ko'rinadi. */}
+                <div className="scrollbar-none -mx-5 flex snap-x items-stretch gap-2.5 overflow-x-auto px-5 pb-0.5">
                   {companies.slice(0, 6).map((c) => (
                     <a
                       key={c.slug}
                       href={l(`/companies/${c.slug}`)}
-                      className="flex min-w-[120px] flex-1 items-center justify-center rounded-xl border border-line bg-surface px-4 py-3.5 font-display text-[15px] font-bold text-ink/80 transition-colors hover:border-signal/40 hover:text-signal"
+                      className="group flex w-[210px] shrink-0 snap-start items-center gap-3 rounded-xl border border-line bg-surface px-3.5 py-3 transition-colors hover:border-signal/40"
                     >
-                      <span className="truncate">{c.name}</span>
+                      <CompanyLogo name={c.name} src={c.logoUrl} size="sm" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-[14.5px] font-bold text-ink group-hover:text-signal">
+                          {c.name}
+                        </span>
+                        <span className="mt-0.5 block text-[12.5px] font-medium text-growth">
+                          {t.companiesPage.card.vacancies(c.activeVacancyCount)}
+                        </span>
+                      </span>
                     </a>
                   ))}
                   <a
                     href={l("/companies")}
-                    className="flex min-w-[150px] flex-1 items-center justify-center gap-2 rounded-xl border border-signal/20 bg-signal-soft px-4 py-3.5 text-[13.5px] font-bold text-signal transition-colors hover:border-signal/40"
+                    className="flex w-[150px] shrink-0 snap-start items-center justify-center gap-2 rounded-xl border border-signal/20 bg-signal-soft px-4 text-[13.5px] font-bold text-signal transition-colors hover:border-signal/40"
                   >
                     {t.home.viewAll}
                   </a>

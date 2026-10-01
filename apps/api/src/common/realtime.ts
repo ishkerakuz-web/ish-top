@@ -82,12 +82,88 @@ export async function releasePresence(): Promise<void> {
   }
 }
 
+/**
+ * "Bu ulanish AYNAN shu suhbatni ochib turibdi" belgisi.
+ *
+ * Nega kerak: ilgari chat Telegram ogohlantirishi `isOnline` ga qarardi, ya'ni
+ * "saytda ochiq socket bormi". Lekin bildirishnoma qo'ng'irog'i HAR BIR sahifada
+ * socket ochadi — demak vakansiyalarni ko'rib o'tirgan odam ham "onlayn" edi va
+ * yangi xabar haqida NA saytda, NA Telegram'da xabar olmasdi: u xabarni faqat
+ * tasodifan Xabarlar bo'limiga kirganda ko'rardi.
+ *
+ * Endi klient qaysi suhbatni ochganini aytib turadi (`{type:"view"}` kadri) va
+ * xabar yetkazishda aniq savolga javob beramiz: "qabul qiluvchi ayni damda SHU
+ * yozishmaga qarab turibdimi?". Yo'q bo'lsa — qo'ng'iroqqa bildirishnoma va
+ * Telegram ogohlantirishi ketadi.
+ *
+ * Varaq yashirilganda (`visibilitychange`) klient belgini olib tashlaydi, shuning
+ * uchun ochiq lekin ko'rinmayotgan varaq "qarab turibdi" hisoblanmaydi.
+ */
+const viewing = new Map<string, Map<WebSocket, string>>();
+
+function viewingKey(userId: string, conversationId: string): string {
+  return `viewing:${userId}:${conversationId}`;
+}
+
+/** Onlayn belgisi bilan bir xil muddat — heartbeat'da uzaytiriladi. */
+const VIEWING_TTL_SEC = PRESENCE_TTL_SEC;
+
+export function setViewing(userId: string, ws: WebSocket, conversationId: string | null): void {
+  let bySocket = viewing.get(userId);
+  const previous = bySocket?.get(ws);
+  if (previous && previous !== conversationId) {
+    bySocket?.delete(ws);
+    if (!hasLocalViewer(userId, previous)) void redisCall("viewing", (redis) => redis.del(viewingKey(userId, previous)));
+  }
+  if (conversationId === null) {
+    if (bySocket && bySocket.size === 0) viewing.delete(userId);
+    return;
+  }
+  if (!bySocket) {
+    bySocket = new Map();
+    viewing.set(userId, bySocket);
+  }
+  bySocket.set(ws, conversationId);
+  void redisCall("viewing", (redis) => redis.set(viewingKey(userId, conversationId), "1", "EX", VIEWING_TTL_SEC));
+}
+
+function hasLocalViewer(userId: string, conversationId: string): boolean {
+  const bySocket = viewing.get(userId);
+  if (!bySocket) return false;
+  for (const value of bySocket.values()) if (value === conversationId) return true;
+  return false;
+}
+
+/** Ulanish yopilganda belgini tozalaydi. */
+function clearViewing(userId: string, ws: WebSocket): void {
+  const bySocket = viewing.get(userId);
+  const previous = bySocket?.get(ws);
+  if (!bySocket || !previous) return;
+  bySocket.delete(ws);
+  if (bySocket.size === 0) viewing.delete(userId);
+  if (!hasLocalViewer(userId, previous)) void redisCall("viewing", (redis) => redis.del(viewingKey(userId, previous)));
+}
+
+/**
+ * Qabul qiluvchi ayni damda shu suhbatni ochib turibdimi.
+ *
+ * Avval shu nusxa (tezkor yo'l), keyin Redis — ko'p nusxali deployda odam
+ * boshqa nusxaga ulangan bo'lishi mumkin. Redis yo'q bo'lsa faqat shu nusxa
+ * hisoblanadi: eng yomoni ortiqcha bildirishnoma ketadi, xabar yo'qolmaydi.
+ */
+export async function isViewingConversation(userId: string, conversationId: string): Promise<boolean> {
+  if (hasLocalViewer(userId, conversationId)) return true;
+  const found = await redisCall("viewing", (redis) => redis.exists(viewingKey(userId, conversationId)));
+  return (found ?? 0) > 0;
+}
+
 /** Foydalanuvchining ochiq ulanishlari soni (test va diagnostika uchun). */
 export function socketCount(userId: string): number {
   return sockets.get(userId)?.size ?? 0;
 }
 
 export function removeSocket(userId: string, ws: WebSocket): void {
+  clearViewing(userId, ws);
   const set = sockets.get(userId);
   if (!set) return;
   set.delete(ws);
@@ -181,6 +257,14 @@ export function startHeartbeat(intervalMs = 30_000): void {
     for (const [userId, set] of sockets) {
       // Onlayn belgisining muddati uzaytiriladi (Redis bo'lsa)
       markPresent(userId);
+      // Ochiq turgan suhbat belgisi ham — aks holda u 90 soniyadan keyin
+      // o'chib, uzoq o'qib o'tirgan odamga keraksiz bildirishnoma ketardi
+      const open = viewing.get(userId);
+      if (open) {
+        for (const conversationId of new Set(open.values())) {
+          void redisCall("viewing", (redis) => redis.expire(viewingKey(userId, conversationId), VIEWING_TTL_SEC));
+        }
+      }
       for (const ws of [...set]) {
         if (alive.get(ws) === false) {
           ws.terminate();

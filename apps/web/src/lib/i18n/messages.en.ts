@@ -1676,6 +1676,7 @@ const extra: ExtraMessages = {
 
   // Audit R3, D-059: translation templates for server notifications (payload.i18n.key).
   notificationTemplates: {
+    "chat.newMessage": { title: "New message", body: "You have a new message." },
     "application.new": { title: "New application", body: "A new candidate applied for “{vacancyTitle}”" },
     "application.statusChanged": { title: "Application status changed", body: "“{vacancyTitle}”: {status}" },
     "alerts.newMatches": { title: "New jobs for “{searchName}” — {count}", body: "{titles}" },

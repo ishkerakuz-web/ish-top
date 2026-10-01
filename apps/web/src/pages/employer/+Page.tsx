@@ -29,7 +29,12 @@ export default function Page() {
 
   return (
     <div>
-      <section className="relative overflow-hidden border-b border-line">
+      {/* HEADER OSTIGA CHO'ZILADI: header `sticky` bo'lgani uchun oqimda 76px
+          (h-16 + pt-3) joy egallaydi. Shu balandlikka teskari margin berib,
+          jonli fon sahifaning eng tepasidan boshlanadi — tepada shaffof turgan
+          navbar fonning bir qismiga aylanadi, ikki qavat orasidagi chok yo'qoladi.
+          Ichki `pt` esa kontentni header ostidan chiqarib turadi. */}
+      <section className="relative -mt-[76px] overflow-hidden border-b border-line pt-[76px]">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-surface-2 to-paper" />
         <HeroBackdrop />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">

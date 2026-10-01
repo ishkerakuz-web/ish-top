@@ -1689,6 +1689,7 @@ const extra: ExtraMessages = {
 
   // Audit R3, D-059: шаблоны серверных уведомлений (payload.i18n.key).
   notificationTemplates: {
+    "chat.newMessage": { title: "Новое сообщение", body: "Вам пришло новое сообщение." },
     "application.new": { title: "Новый отклик", body: "На вакансию «{vacancyTitle}» откликнулся новый кандидат" },
     "application.statusChanged": { title: "Статус отклика изменён", body: "По вакансии «{vacancyTitle}»: {status}" },
     "alerts.newMatches": { title: "Новые вакансии по запросу «{searchName}» — {count}", body: "{titles}" },

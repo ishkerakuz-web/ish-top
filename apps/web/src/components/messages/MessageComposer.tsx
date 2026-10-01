@@ -54,7 +54,11 @@ export function MessageComposer({
       }}
       className="border-t border-line bg-surface p-3 sm:px-4"
     >
-      <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface-2/50 p-1.5 pl-3 transition-colors focus-within:border-signal/50 focus-within:bg-surface focus-within:ring-2 focus-within:ring-signal/15">
+      {/* Fokusda faqat fon ravshanlashadi. Ilgari bu yerda `ring-2` + ko'k chegara
+          bor edi — kursor qo'yilishi bilan maydon atrofida qattiq ko'k to'rtburchak
+          paydo bo'lardi va yozishmani bo'lib yuborardi. Fokus baribir bilinadi:
+          kursor chaqnaydi, yuborish tugmasining o'z halqasi bor. */}
+      <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface-2/50 p-1.5 pl-3 transition-colors focus-within:bg-surface">
         <label htmlFor={inputId} className="sr-only">
           {m.composer.label}
         </label>

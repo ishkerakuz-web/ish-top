@@ -3,10 +3,10 @@ import { z } from "zod";
 import { isObjectId, objectId } from "../../common/validation.js";
 import { prisma } from "../../common/prisma.js";
 import { env, features } from "../../common/env.js";
-import { sendToUser, isOnline } from "../../common/realtime.js";
+import { sendToUser, isViewingConversation } from "../../common/realtime.js";
 import { keyedCache } from "../../common/cache.js";
 import { consumeQuota, HOUR_MS } from "../../common/quota.js";
-import { isChannelEnabled } from "../notifications/notifications.service.js";
+import { isChannelEnabled, notify } from "../notifications/notifications.service.js";
 import { notifyUserViaTelegram } from "../telegram/telegram.service.js";
 
 /**
@@ -104,9 +104,19 @@ export async function conversationIdsOf(userId: string): Promise<string[]> {
 }
 
 /**
- * Xabarni saqlaydi va real-time yetkazadi: ikkala tomonning ochiq oynalariga WS orqali,
- * qabul qiluvchi saytda bo'lmasa — Telegram orqali. WS handler ham, ariza holati izohi ham
- * shu yagona yo'ldan o'tadi (audit ISSUE-060).
+ * Xabarni saqlaydi va real-time yetkazadi.
+ *
+ * Yetkazish qoidasi QABUL QILUVCHI AYNI DAMDA SHU YOZISHMANI ochib turganiga
+ * bog'liq (`isViewingConversation`), "saytda ochiq socket bormi" ga emas:
+ * - ochib turgan bo'lsa — faqat `message` kadri, u xabarni shu zahoti ko'radi;
+ * - ochmagan bo'lsa — qo'ng'iroqqa bildirishnoma (bazaga yoziladi va ochiq
+ *   varaqlarga darrov uzatiladi) va Telegram ogohlantirishi.
+ *
+ * Ilgari bu yerda `isOnline` turardi. Bildirishnoma qo'ng'irog'i esa har sahifada
+ * socket ochadi, ya'ni saytning istalgan burchagida yurgan odam "onlayn" sanalardi:
+ * natijada u yangi xabarni na qo'ng'iroqda, na Telegram'da ko'rardi.
+ *
+ * WS handler ham, ariza holati izohi ham shu yagona yo'ldan o'tadi (audit ISSUE-060).
  */
 export async function deliverMessage(
   conversationId: string,
@@ -130,10 +140,39 @@ export async function deliverMessage(
   sendToUser(senderId, JSON.stringify({ type: "message", message, ...(clientId ? { clientId } : {}) }));
   sendToUser(receiverId, JSON.stringify({ type: "message", message }));
 
-  if (!(await isOnline(receiverId))) {
+  if (!(await isViewingConversation(receiverId, conversationId))) {
+    void notifyNewMessage(receiverId, conversationId).catch(() => undefined);
     void chatTelegramAlert(receiverId, conversationId).catch(() => undefined);
   }
   return saved;
+}
+
+/**
+ * Qo'ng'iroq uchun bildirishnoma: "yangi xabar".
+ *
+ * Takrorlanmasin deb bitta suhbat bo'yicha 2 daqiqada bitta yozuv — ketma-ket
+ * kelgan 10 ta xabar qo'ng'iroqni 10 ta bir xil qator bilan to'ldirmaydi.
+ *
+ * Sxemada chat uchun alohida `NotificationType` yo'q (enum o'zgarishi bu guruh
+ * mulki emas), shuning uchun eng yaqin mavjud tur — `system`; turkum esa
+ * `payload.i18n.key = "chat.newMessage"` bilan ajratiladi (D-059 odati).
+ * Xabar MATNI yozilmaydi (audit R3, telegram-13 bilan bir xil sabab).
+ */
+const CHAT_NOTIFY_WINDOW_MS = 2 * 60 * 1000;
+
+async function notifyNewMessage(receiverId: string, conversationId: string): Promise<void> {
+  if (!(await consumeQuota(`chat:notify:${receiverId}:${conversationId}`, 1, CHAT_NOTIFY_WINDOW_MS))) return;
+  await notify({
+    userId: receiverId,
+    type: "system",
+    title: "Yangi xabar",
+    body: "Sizga yangi xabar keldi.",
+    url: `/messages?c=${conversationId}`,
+    i18n: { key: "chat.newMessage" },
+    // Telegram shu yerdan EMAS, `chatTelegramAlert` dan ketadi: u suhbat bo'yicha
+    // 10 daqiqalik o'z chegarasiga ega va matnni oshkor qilmaydi.
+    channels: ["in_app", "push"],
+  });
 }
 
 /** Bitta suhbat bo'yicha Telegram ogohlantirishi orasidagi eng qisqa vaqt (audit R3, realtime-3). */

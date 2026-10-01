@@ -2,7 +2,8 @@ import React, { useEffect, useId, useRef, useState } from "react";
 import { useT } from "../../lib/i18n/index.js";
 import { EXPERIENCE_KEYS, type ExperienceKey } from "../../lib/salaries/query.js";
 import type { Region } from "../../lib/types.js";
-import { IconChevronDown, IconSearch, IconX, Spinner } from "./icons.js";
+import { IconSearch, IconX, Spinner } from "./icons.js";
+import { FieldSelect } from "../vacancies/FieldSelect.js";
 
 const DEBOUNCE_MS = 400;
 /** Yozish paytida qidiruv 2 harfdan boshlanadi; Enter esa har doim darhol qidiradi. */
@@ -12,8 +13,7 @@ const MIN_CHARS = 2;
  * Qidiruv qatori: kasb/lavozim matni + hudud + tajriba + "Qidirish".
  * - Matn: yozish to'xtagach ~400ms o'tib avtomatik; Enter / tugma — darhol;
  *   Esc yoki × — tozalash. URL o'zgarsa (orqaga tugmasi) maydon moslashadi.
- * - Hudud va tajriba — tanlanishi bilan qo'llanadi. Oddiy `<select>`:
- *   klaviatura, ekran o'quvchi va telefon tanlagichi o'z-o'zidan ishlaydi.
+ * - Hudud va tajriba — tanlanishi bilan qo'llanadi (umumiy `FieldSelect`).
  */
 export function SalarySearch({
   text: value,
@@ -151,42 +151,5 @@ export function SalarySearch({
         {s.search.submit}
       </button>
     </form>
-  );
-}
-
-function FieldSelect({
-  id,
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  options: { value: string; label: string }[];
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="relative min-w-0">
-      <label htmlFor={id} className="sr-only">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`h-12 w-full cursor-pointer appearance-none truncate rounded-2xl border border-line bg-surface pl-4 pr-10 text-[14.5px] shadow-card lg:pl-3.5 lg:pr-8 lg:text-[14px] xl:pl-4 xl:pr-10 xl:text-[14.5px] transition-colors hover:border-signal/40 focus:border-signal focus:outline-none focus:ring-4 focus:ring-signal/10 sm:h-14 dark:[color-scheme:dark] ${
-          value ? "font-medium text-ink" : "text-ink/80"
-        }`}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <IconChevronDown size={17} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dusk lg:right-2.5 xl:right-3.5" />
-    </div>
   );
 }

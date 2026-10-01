@@ -6,6 +6,7 @@ import { fetchAdminCounters } from "../lib/apiExtra.js";
 import type { AdminCounters } from "../lib/types.js";
 import { pageLocale } from "../lib/i18n/pageLocale.js";
 import { useAuth } from "./AuthContext.js";
+import { Select } from "./Select.js";
 
 /**
  * Admin sahifalarining umumiy qobig'i: rol tekshiruvi + yon navigatsiya.
@@ -353,18 +354,13 @@ export function AdminSelect({
   label: string;
 }) {
   return (
-    <select
+    <Select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label={label}
-      className="rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-ink focus:border-signal focus:outline-none"
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+      onChange={onChange}
+      ariaLabel={label}
+      options={options}
+      buttonClassName="h-10 rounded-xl border border-line bg-surface text-sm text-ink transition-colors hover:border-signal/40"
+    />
   );
 }
 

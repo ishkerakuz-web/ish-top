@@ -45,6 +45,14 @@ export function useChatSocket(token: string | null, handlers: Handlers) {
   const [connected, setConnected] = useState(false);
   /** Yarim ochiq ulanishni majburan yopish — effekt ichida to'ldiriladi. */
   const resetRef = useRef<() => void>(() => undefined);
+  /**
+   * Ayni damda ochib turilgan yozishma. Server shu belgiga qarab yangi xabar
+   * uchun qo'ng'iroq bildirishnomasi va Telegram ogohlantirishini yuboradimi-yo'qmi
+   * hal qiladi, shuning uchun u HAR qayta ulanishdan keyin qaytadan yuboriladi —
+   * aks holda tarmoq uzilib-ulangandan so'ng odam ochiq suhbatda o'tirgan bo'lsa ham
+   * "ko'rmayapti" sanalib, o'ziga Telegram xabari kelardi.
+   */
+  const viewingRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!token || typeof window === "undefined") return;
@@ -105,6 +113,7 @@ export function useChatSocket(token: string | null, handlers: Handlers) {
         setConnected(true);
         releaseThis = socketOpened();
         releaseLive = releaseThis;
+        if (viewingRef.current) ws.send(JSON.stringify({ type: "view", conversationId: viewingRef.current }));
         ref.current.onOpen?.(everOpened);
         everOpened = true;
       };
@@ -198,8 +207,22 @@ export function useChatSocket(token: string | null, handlers: Handlers) {
     }
   }, []);
 
+  /**
+   * "Men shu yozishmani ochib turibman" (yoki `null` — hech qaysi).
+   *
+   * Qiymat ref'da saqlanadi va qayta ulanishda avtomatik tiklanadi.
+   */
+  const setViewing = useCallback((conversationId: string | null) => {
+    if (viewingRef.current === conversationId) return;
+    viewingRef.current = conversationId;
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "view", conversationId }));
+    }
+  }, []);
+
   /** Ulanish "ochiq" ko'rinsa ham javob bermayapti — yopib qayta ulanamiz (audit R3, realtime-16). */
   const reset = useCallback(() => resetRef.current(), []);
 
-  return { send, markRead, connected, reset };
+  return { send, markRead, setViewing, connected, reset };
 }

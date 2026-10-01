@@ -547,6 +547,25 @@ export function useMessenger(token: string, userId: string, activeId: string | n
     void reloadList();
   }, [reloadList]);
 
+  /**
+   * Serverga "shu yozishmani ochib turibman" deb bildiramiz.
+   *
+   * Serverda yangi xabar kelganda shu belgi tekshiriladi: ochib turgan odamga
+   * qo'ng'iroq bildirishnomasi ham, Telegram ogohlantirishi ham yuborilmaydi —
+   * u xabarni ekranda ko'rib turibdi. Boshqa sahifaga o'tganda yoki varaq
+   * yashirilganda belgi olib tashlanadi, ya'ni xabar e'tiborsiz qolmaydi.
+   */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const sync = () => socket.setViewing(activeId && isPageVisible() ? activeId : null);
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      document.removeEventListener("visibilitychange", sync);
+      socket.setViewing(null);
+    };
+  }, [activeId, socket.setViewing]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // audit R3, D-078: havola bilan ochilgan suhbat birinchi sahifada bo'lmasligi mumkin —
   // topilmaguncha (yoki sahifalar tugaguncha) ro'yxat davomi yuklanadi, "topilmadi" deyilmaydi
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useId } from "react";
 import { useT } from "../../../../lib/i18n/index.js";
-import { IconAlert, IconChevronDown } from "../icons.js";
+import { IconAlert } from "../icons.js";
+import { Select } from "../../../Select.js";
 
 /** Forma boshqaruvlari — bir xil balandlik (44px), fokus halqasi va xato holati. */
 const CONTROL =
@@ -91,7 +92,14 @@ export interface Option {
   label: string;
 }
 
-/** Oddiy `<select>` (klaviatura, ekran o'quvchi, telefon tanlagichi o'z-o'zidan ishlaydi). */
+/**
+ * Forma tanlagichi — saytning umumiy `Select` i ustida.
+ *
+ * Ilgari native `<select>` edi: brauzerning kulrang ro'yxati formaning qolgan
+ * maydonlaridan ajralib turardi. `placeholderSelectable=false` bo'lsa bo'sh
+ * variant ro'yxatga umuman qo'shilmaydi — majburiy maydonda tanlovni bekor
+ * qilib bo'lmaydi.
+ */
 export function SelectInput({
   id,
   value,
@@ -114,29 +122,21 @@ export function SelectInput({
   onBlur?: () => void;
   "aria-describedby"?: string;
 }) {
+  const all =
+    placeholder !== undefined && placeholderSelectable ? [{ value: "", label: placeholder }, ...options] : options;
   return (
-    <div className="relative">
-      <select
+    <div onBlur={onBlur}>
+      <Select
         id={id}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        aria-invalid={invalid || undefined}
-        aria-describedby={aria["aria-describedby"]}
-        className={`${CONTROL} ${tone(invalid)} h-11 cursor-pointer appearance-none truncate pl-3.5 pr-10 dark:[color-scheme:dark] ${value ? "" : "text-dusk"}`}
-      >
-        {placeholder !== undefined && (
-          <option value="" disabled={!placeholderSelectable}>
-            {placeholder}
-          </option>
-        )}
-        {options.map((o) => (
-          <option key={o.value} value={o.value} className="text-ink">
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <IconChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dusk" />
+        onChange={onChange}
+        options={all}
+        placeholder={placeholder}
+        ariaLabel={placeholder}
+        invalid={invalid}
+        describedBy={aria["aria-describedby"]}
+        buttonClassName={`${CONTROL} ${tone(invalid)} h-11`}
+      />
     </div>
   );
 }

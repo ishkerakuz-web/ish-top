@@ -2,9 +2,9 @@ import React from "react";
 import { useT } from "../../lib/i18n/index.js";
 import type { ContactSubjectKey } from "../../lib/i18n/types.js";
 import { errorId, fieldClass } from "./ContactField.js";
-import { IconChevronDown } from "../support/icons.js";
+import { Select } from "../Select.js";
 
-/** Mavzu — oddiy `<select>` (klaviatura va telefon tanlagichi o'z-o'zidan ishlaydi). Qiymatlar backend enum'idan. */
+/** Mavzu tanlovi. Qiymatlar backend enum'idan; ko'rinishi saytning qolgan tanlagichlari bilan bir xil. */
 export function ContactSubjectSelect({
   id,
   value,
@@ -22,28 +22,20 @@ export function ContactSubjectSelect({
 }) {
   const c = useT().contact;
   return (
-    <div className="relative">
-      <select
+    <div onBlur={onBlur}>
+      <Select
         id={id}
         name="subject"
+        ariaLabel={c.subjectPlaceholder}
+        placeholder={c.subjectPlaceholder}
         value={value}
-        onChange={(e) => onChange(e.target.value as ContactSubjectKey | "")}
-        onBlur={onBlur}
-        aria-required="true"
-        aria-invalid={invalid || undefined}
-        aria-describedby={invalid ? errorId(id) : undefined}
-        className={`${fieldClass(invalid)} h-12 cursor-pointer appearance-none pr-10 dark:[color-scheme:dark] ${value ? "" : "text-dusk"}`}
-      >
-        <option value="" disabled>
-          {c.subjectPlaceholder}
-        </option>
-        {subjects.map((subject) => (
-          <option key={subject} value={subject} className="text-ink">
-            {c.subjects[subject]}
-          </option>
-        ))}
-      </select>
-      <IconChevronDown size={18} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dusk" />
+        onChange={(next) => onChange(next as ContactSubjectKey | "")}
+        options={subjects.map((subject) => ({ value: subject, label: c.subjects[subject] }))}
+        required
+        invalid={invalid}
+        describedBy={invalid ? errorId(id) : undefined}
+        buttonClassName={`${fieldClass(invalid)} h-12`}
+      />
     </div>
   );
 }

@@ -310,6 +310,8 @@ const CONTRACT_KEYS = {
   "security.phone_changed": [],
   "security.recovery_completed": [],
   "security.sessions_invalidated": [],
+  // Chat xabari parametrsiz: yozishma MATNI bildirishnomaga chiqmaydi (audit R3, telegram-13)
+  "chat.newMessage": [],
 };
 
 const LOCALES = [
