@@ -38,6 +38,12 @@ const POPUP_GAP = 6;
 const VIEWPORT_PADDING = 8;
 const POPUP_MAX_HEIGHT = 320;
 const POPUP_MIN_HEIGHT = 160;
+/**
+ * Ro'yxatning eng kichik eni. Tugma tor bo'lishi mumkin (telefonda filtr
+ * maydonlari yonma-yon turadi), lekin variant yozuvlari — "Toshkent viloyati"
+ * kabi — to'liq o'qilishi kerak. Ekranga sig'masa chekkagacha kengayadi.
+ */
+const POPUP_MIN_WIDTH = 220;
 
 /**
  * Premium dropdown — native `<select>` o'rniga (mavzuga moslashuvchi, brend uslubida).
@@ -144,9 +150,14 @@ export function Select({
     // Pastda joy yetarli bo'lmasa va tepada ko'proq bo'lsa — tepaga ochamiz
     const below = spaceBelow >= POPUP_MIN_HEIGHT || spaceBelow >= spaceAbove;
     const available = Math.max(POPUP_MIN_HEIGHT, below ? spaceBelow : spaceAbove);
+    // Eni: tugmadan tor emas, lekin ekranga sig'adi
+    const maxWidth = window.innerWidth - VIEWPORT_PADDING * 2;
+    const width = Math.min(maxWidth, Math.max(rect.width, POPUP_MIN_WIDTH));
+    // Kengaygan ro'yxat o'ng chekkadan chiqib ketmasin (telefonda eng o'ngdagi filtr)
+    const left = Math.max(VIEWPORT_PADDING, Math.min(rect.left, window.innerWidth - VIEWPORT_PADDING - width));
     setPos({
-      left: rect.left,
-      width: rect.width,
+      left,
+      width,
       maxHeight: Math.min(POPUP_MAX_HEIGHT, available),
       ...(below ? { top: rect.bottom + POPUP_GAP } : { bottom: window.innerHeight - rect.top + POPUP_GAP }),
     });

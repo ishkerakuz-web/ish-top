@@ -29,7 +29,7 @@ manzil (URL) orqali biladi.
    nomini yozing:
 
    ```
-   mongodb+srv://user:parol@cluster0.xxxxx.mongodb.net/ishbor?retryWrites=true&w=majority
+   mongodb+srv://<foydalanuvchi>:<parol>@cluster0.xxxxx.mongodb.net/ishbor?retryWrites=true&w=majority
    ```
 
 > **Nega aynan Atlas?** Prisma tranzaksiyalari (ariza holati, to'lov
@@ -290,7 +290,7 @@ deploydan oldin bir marta ishga tushiring:
 
 ```bash
 npm run build
-E2E_DATABASE_URL="mongodb+srv://user:parol@cluster/ishbor_test" npm run test:e2e
+E2E_DATABASE_URL="mongodb+srv://<foydalanuvchi>:<parol>@cluster/ishbor_test" npm run test:e2e
 ```
 
 Skript API'ni haqiqiy MongoDB ustida ko'taradi va asosiy oqimlarni HTTP orqali
@@ -314,7 +314,7 @@ tozalaydi. `dist/` build'i `src/` dagi o'zgarishlardan eski bo'lsa ham to'xtaydi
 Auth va Telegram oqimlari uchun alohida tekshiruv (bot transporti soxta, mantiq haqiqiy):
 
 ```bash
-AUTH_TEST_DATABASE_URL="mongodb+srv://user:parol@cluster/ishbor_authtest" npm run test:auth   # alohida test bazasi (nomida "test"); skript uni --force-reset bilan tozalaydi
+AUTH_TEST_DATABASE_URL="mongodb+srv://<foydalanuvchi>:<parol>@cluster/ishbor_authtest" npm run test:auth   # alohida test bazasi (nomida "test"); skript uni --force-reset bilan tozalaydi
 ```
 
 ### Qo'lda tekshirish

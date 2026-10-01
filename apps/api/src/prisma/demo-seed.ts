@@ -1769,6 +1769,10 @@ async function createDemo(): Promise<SeedIds> {
             isOpenToWork: s.openToWork ?? true,
             avatarUrl,
             resumeUrl,
+            // Profil sahifasidagi "qo'shimcha aloqa raqami" maydoni ham to'la bo'lsin —
+            // demo hisobda bo'sh qolgan maydon tekshiruvda "ishlamayapti" deb tuyuladi.
+            // Bu raqam TASDIQLANMAYDI (audit R3, telegram-14), shuning uchun asosiysidan boshqa.
+            additionalPhone: nextPhone(),
           },
         },
       },

@@ -40,7 +40,7 @@ if (!uri) {
   console.error(
     [
       "E2E_DATABASE_URL berilmagan. Masalan:",
-      '  E2E_DATABASE_URL="mongodb+srv://user:parol@cluster/ishbor_test" npm run test:e2e',
+      '  E2E_DATABASE_URL="mongodb+srv://<foydalanuvchi>:<parol>@cluster/ishbor_test" npm run test:e2e',
     ].join("\n")
   );
   process.exit(1);
