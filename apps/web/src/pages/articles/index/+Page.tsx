@@ -7,7 +7,7 @@ import { ArticlesView } from "../../../components/articles/ArticlesView.js";
 export default function Page() {
   const initial = useData<ArticlesPageData>();
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6 lg:pt-7">
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-5 lg:pt-7">
       <ArticlesView initial={initial} />
     </div>
   );

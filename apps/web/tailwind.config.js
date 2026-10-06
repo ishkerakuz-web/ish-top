@@ -30,6 +30,7 @@ export default {
         danger: "rgb(var(--danger) / <alpha-value>)", // xato holatlari
         gold: {
           DEFAULT: "rgb(var(--gold) / <alpha-value>)", // brend amberi (logo sarig'i)
+          soft: "rgb(var(--gold-soft) / <alpha-value>)", // yengil oltinrang fon
           deep: "rgb(var(--gold-deep) / <alpha-value>)", // amber TEXT — AA kontrast
         },
       },

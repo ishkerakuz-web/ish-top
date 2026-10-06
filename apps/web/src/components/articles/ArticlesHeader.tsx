@@ -14,7 +14,7 @@ export function ArticlesHeader({ count, loading }: { count: number | null; loadi
   return (
     <header className="flex items-center justify-between gap-6">
       <div className="min-w-0">
-        <nav aria-label={t.companyDetail.breadcrumb}>
+        <nav aria-label={t.companyDetail.breadcrumb} className="hidden sm:block">
           <ol className="flex flex-wrap items-center gap-1.5 text-[13px] text-dusk">
             <li>
               <a href={l("/")} className="transition-colors hover:text-ink">
@@ -37,7 +37,7 @@ export function ArticlesHeader({ count, loading }: { count: number | null; loadi
             <Skeleton className="h-6 w-24 rounded-full" />
           ) : null}
         </div>
-        <p className="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-dusk">{a.subtitle}</p>
+        <p className="mt-1.5 hidden max-w-2xl text-[15px] leading-relaxed text-dusk sm:block">{a.subtitle}</p>
       </div>
       <span aria-hidden className="pointer-events-none -my-3 hidden shrink-0 select-none md:block">
         <img src="/articles-news.webp" alt="" width={352} height={220} decoding="async" className="block w-[150px] lg:w-[176px]" />

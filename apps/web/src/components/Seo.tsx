@@ -29,6 +29,8 @@ export function Seo({
       {canonical && <meta property="og:url" content={canonical} />}
       {canonical && <link rel="canonical" href={canonical} />}
       {image && <meta property="og:image" content={image} />}
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
       {noindex && <meta name="robots" content="noindex, follow" />}
     </>
   );

@@ -41,7 +41,7 @@ export function PopularSearches({ q, onSelect }: { q: string; onSelect: (q: stri
   }, [measure]);
 
   return (
-    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+    <div className="mt-4 hidden flex-col gap-2 sm:flex sm:flex-row sm:items-center sm:gap-3">
       <span id={labelId} className="shrink-0 text-[13.5px] font-medium text-dusk">
         {t.vacanciesPage.popular.label}:
       </span>

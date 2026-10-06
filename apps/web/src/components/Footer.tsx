@@ -27,7 +27,7 @@ export default function Footer() {
     pathname.startsWith("/articles/") ||
     employerPanel;
   return (
-    <footer className="border-t border-line">
+    <footer className="hidden border-t border-line lg:block">
       {/* Yirik so'z-belgi qatori — editorial imzo (listing sahifalarida yo'q) */}
       {!product && (
         <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6">
@@ -131,7 +131,7 @@ function CompactFooter({ pathname, search }: { pathname: string; search: string 
   ];
 
   return (
-    <footer className="border-t border-line">
+    <footer className="hidden border-t border-line lg:block">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
           <a href={l("/")} className="whitespace-nowrap font-display text-[15px] font-bold text-ink">

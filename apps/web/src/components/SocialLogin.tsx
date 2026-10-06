@@ -89,7 +89,7 @@ export function SocialLogin({
           Google: VITE_GOOGLE_CLIENT_ID berilganda haqiqiy GIS tugmasi
           chiziladi; berilmasa (va Apple har doim) tugma bosilganda
           "hozircha ulanmagan" izohi chiqadi — jim turgan tugmadan yaxshiroq. */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2">
         {GOOGLE_CLIENT_ID ? (
           <div ref={googleRef} className="flex justify-center [color-scheme:light]" />
         ) : (

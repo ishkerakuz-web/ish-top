@@ -26,7 +26,7 @@ import { displayName } from "./participant.js";
 
 type QueryUpdate = (patch: Partial<MessagesQuery>, options?: { replace?: boolean }) => void;
 
-const PAGE = "mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pt-6";
+const PAGE = "mx-auto max-w-7xl px-4 pb-8 pt-2 sm:px-6 sm:pt-6";
 const isPhone = () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
 /** Seans hali aniqlanmoqda (yoki mehmon login'ga yo'naltirilmoqda). */

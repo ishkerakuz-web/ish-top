@@ -33,10 +33,10 @@ export function VacancyCard({
       style={{ animationDelay: `${Math.min(index * 50, 250)}ms` }}
       className="group relative flex animate-fade-up flex-col overflow-hidden rounded-2xl border border-line bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-card-hover"
     >
-      {/* Imzo-detal: hover'da chapdan suzib kiruvchi oltin chiziq ("martaba yo'li") */}
+      {/* Imzo-detal: chapdan suzib kiruvchi chiziq — mobile'da doimiy, desktop'da hover'da */}
       <span
         aria-hidden
-        className="absolute inset-y-4 left-0 w-[3px] origin-top scale-y-0 rounded-r bg-signal transition-transform duration-300 group-hover:scale-y-100"
+        className={`absolute inset-y-4 left-0 w-[3px] rounded-r transition-transform duration-300 sm:origin-top sm:scale-y-0 sm:group-hover:scale-y-100 ${vacancy.isPremium ? "bg-gold" : "bg-signal"}`}
       />
 
       {/* Yuqori qator: kompaniya + vaqt */}
@@ -78,10 +78,12 @@ export function VacancyCard({
         <span className="font-mono text-[13.5px] font-semibold tabular-nums text-growth">
           {formatSalary(vacancy.salaryMin, vacancy.salaryMax, t.fmt, vacancy.isSalaryHidden)}
         </span>
-        <span className="hidden min-w-0 truncate text-xs text-dusk sm:block">
+        <span className="min-w-0 truncate text-xs text-dusk">
           {t.enums.experience[vacancy.experienceRequired]}
-          {" · "}
-          {t.enums.employment[vacancy.employmentType]}
+          <span className="hidden sm:inline">
+            {" · "}
+            {t.enums.employment[vacancy.employmentType]}
+          </span>
         </span>
         {showFavorite && (
           <FavoriteButton

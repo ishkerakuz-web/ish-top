@@ -188,11 +188,11 @@ export function FavoritesView({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-14 pt-5 sm:px-6 sm:pt-7">
+    <div className="mx-auto max-w-7xl px-4 pb-14 pt-2 sm:px-6 sm:pt-7">
       <div className={FAVORITES_LAYOUT}>
         <div className="min-w-0">
           <FavoritesHeader count={ready ? items.length : null} />
-          <div className="mt-6">{main}</div>
+          <div className="mt-4 sm:mt-6">{main}</div>
         </div>
         {!list || list.status === "loading" ? (
           <FavoritesSidebarSkeleton />

@@ -7,6 +7,8 @@ import "../styles/global.css";
 import React, { useEffect, useRef } from "react";
 import Header from "./Header.js";
 import Footer from "./Footer.js";
+import { MobileBottomNav } from "./MobileBottomNav.js";
+import { ErrorBoundary } from "./ErrorBoundary.js";
 import { AuthProvider } from "./AuthContext.js";
 import { LocaleProvider, useT } from "../lib/i18n/index.js";
 import { ThemeProvider } from "../lib/theme.js";
@@ -25,10 +27,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Header />
             {/* audit R3, D-060 (a11y-ui-9): o'tish havolasining nishoni;
                 tabIndex=-1 — havoladan keyin fokus shu yerga ko'chadi */}
-            <main id="main-content" tabIndex={-1} className="flex-1">
-              {children}
+            <main id="main-content" tabIndex={-1} className="flex-1 pb-28 lg:pb-0">
+              <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <Footer />
+            <MobileBottomNav />
           </div>
         </AuthProvider>
       </ThemeProvider>

@@ -12,7 +12,7 @@ export function MessagesHeader({ role, hideOnMobile }: { role: string | null; hi
   return (
     <header className={`${hideOnMobile ? "hidden md:flex" : "flex"} items-center justify-between gap-6`}>
       <div className="min-w-0">
-        <nav aria-label={t.companyDetail.breadcrumb}>
+        <nav aria-label={t.companyDetail.breadcrumb} className="hidden sm:block">
           <ol className="flex flex-wrap items-center gap-1.5 text-[13px] text-dusk">
             <li>
               <a href={l("/")} className="transition-colors hover:text-ink">
@@ -25,8 +25,8 @@ export function MessagesHeader({ role, hideOnMobile }: { role: string | null; hi
             </li>
           </ol>
         </nav>
-        <h1 className="mt-2 font-display text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[30px]">{m.title}</h1>
-        <p className="mt-1 max-w-2xl text-[14.5px] leading-relaxed text-dusk">{role === "employer" ? m.subtitleEmployer : m.subtitle}</p>
+        <h1 className="font-display text-[22px] font-bold leading-tight tracking-tight text-ink sm:mt-2 sm:text-[30px]">{m.title}</h1>
+        <p className="mt-1 hidden max-w-2xl text-[14.5px] leading-relaxed text-dusk sm:block">{role === "employer" ? m.subtitleEmployer : m.subtitle}</p>
       </div>
       <MessagesIllustration />
     </header>

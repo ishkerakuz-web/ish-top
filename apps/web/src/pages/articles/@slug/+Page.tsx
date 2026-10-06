@@ -19,7 +19,7 @@ function DetailPage({ initial }: { initial: ArticleDetailData }) {
   const { state, retry, retrying } = useArticleDetail(initial, locale);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6 lg:pt-7">
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-5 lg:pt-7">
       <ArticleBreadcrumb title={state.kind === "ok" ? state.article.title : null} loading={state.kind === "loading"} />
       {state.kind === "ok" ? (
         <ArticleDetailView key={state.article.id} article={state.article} related={state.related} />

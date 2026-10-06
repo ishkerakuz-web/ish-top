@@ -189,10 +189,10 @@ function SeekerHub({ token, user }: { token: string; user: CurrentUser }) {
 
   return (
     <ProfileNavProvider go={setTab}>
-      <div className="mx-auto max-w-7xl px-4 pb-14 pt-5 sm:px-6 sm:pt-7">
+      <div className="mx-auto max-w-7xl px-4 pb-14 pt-2 sm:px-6 sm:pt-7">
         <ProfileHeader profile={core.profile} email={email} completion={completion} />
 
-        <div className="mt-5 grid grid-cols-1 gap-5 lg:mt-6 lg:grid-cols-[252px_minmax(0,1fr)] lg:gap-6">
+        <div className="mt-3 grid grid-cols-1 gap-5 sm:mt-5 lg:mt-6 lg:grid-cols-[252px_minmax(0,1fr)] lg:gap-6">
           <ProfileNav active={tab} counts={counts} attention={attention} />
           <div ref={contentRef} key={tab} className="min-w-0 animate-fade-in">
             {content}
@@ -213,7 +213,7 @@ function ApplicationsMoved() {
 
 function HubSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-14 pt-5 sm:px-6 sm:pt-7" aria-busy="true">
+    <div className="mx-auto max-w-7xl px-4 pb-14 pt-2 sm:px-6 sm:pt-7" aria-busy="true">
       <div className="rounded-3xl border border-line bg-surface p-5 shadow-card sm:p-7">
         <div className="flex items-center gap-5">
           <Skeleton className="h-16 w-16 rounded-2xl sm:h-[76px] sm:w-[76px]" />

@@ -7,7 +7,7 @@ dist
 .DS_Store
 pnpm-lock.yaml
 .turbo
-.claude/settings.local.json
+.claude/
 /apps/web/dist
 /apps/api/dist
 /apps/web/.vike
@@ -19,3 +19,6 @@ pnpm-lock.yaml
 # Deploy vositalari
 .vercel
 .railway
+
+# Sahifa skrinshotlari (lokal tekshiruv uchun; repoga kerak emas)
+/rasmlar

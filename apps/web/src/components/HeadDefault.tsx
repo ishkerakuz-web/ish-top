@@ -53,7 +53,10 @@ export default function HeadDefault() {
       <link rel="apple-touch-icon" href="/logo-180.png" />
       <meta property="og:site_name" content="ISH BOR!" />
       <meta property="og:locale" content={OG_LOCALE[locale]} />
-      <meta property="og:image" content={`${SITE_ORIGIN}/logo.png`} />
+      <meta property="og:image" content={`${SITE_ORIGIN}/og-cover.webp`} />
+      <meta property="og:image:type" content="image/webp" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
       <meta name="twitter:card" content="summary_large_image" />
       {/* Ko'p tilli SEO — Google har tilni alohida URL sifatida ko'radi */}
       {!isErrorPage &&

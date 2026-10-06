@@ -21,8 +21,10 @@ function DetailPage({ initial }: { initial: VacancyDetailData }) {
   const { state, retry, retrying } = useVacancyDetail(initial);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6 lg:pt-7">
-      <Breadcrumb title={state.kind === "ok" ? state.vacancy.title : null} loading={state.kind === "loading"} />
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-5 lg:pt-7">
+      <div className="hidden sm:block">
+        <Breadcrumb title={state.kind === "ok" ? state.vacancy.title : null} loading={state.kind === "loading"} />
+      </div>
       {state.kind === "ok" ? (
         <VacancyDetailView key={state.vacancy.id} vacancy={state.vacancy} similar={state.similar} />
       ) : state.kind === "loading" ? (

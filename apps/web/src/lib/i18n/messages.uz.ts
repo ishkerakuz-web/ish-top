@@ -53,6 +53,8 @@ const base: BaseMessages = {
     notFound: { title: "Sahifa topilmadi | ISH BOR!", description: "Qidirgan sahifa topilmadi." },
   },
   nav: {
+    home: "Bosh sahifa",
+    search: "Qidiruv",
     vacancies: "Vakansiyalar",
     companies: "Kompaniyalar",
     articles: "Maqolalar",
@@ -102,6 +104,10 @@ const base: BaseMessages = {
     heroTitle2: "qayerda?",
     heroSubtitle:
       "O'zbekiston bo'ylab faol vakansiyalar. Rezyumeni yarating, mos ishni toping, bir necha bosishda ariza yuboring.",
+    heroMobileTitle1: "Kelajagingizni",
+    heroMobileTitle2: "bugun boshlang",
+    heroMobileSubtitle: "Minglab vakansiyalar orasidan o'zingizga mos ishni toping",
+    heroMobileBadge: "O'zbekiston #1 ish portali",
     searchPlaceholder: "Kasb, lavozim yoki kompaniya nomi",
     searchButton: "Qidirish",
     statVacancies: "faol vakansiya",

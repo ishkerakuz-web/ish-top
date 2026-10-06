@@ -129,7 +129,7 @@ export default function Page() {
         {pending ? v.states.loading : page ? t.search.found(page.total) : ""}
       </p>
 
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[272px_minmax(0,1fr)] xl:gap-8">
+      <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-8 lg:grid-cols-[272px_minmax(0,1fr)] xl:gap-8">
         <aside className="hidden lg:block" aria-label={v.filters.title}>
           <div className="sticky top-24 max-h-[calc(100vh-7.5rem)] overflow-y-auto overscroll-contain rounded-3xl border border-line bg-surface p-5 shadow-card">
             <div className="mb-5 flex items-center justify-between gap-3">

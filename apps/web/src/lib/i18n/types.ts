@@ -31,6 +31,8 @@ export interface BaseMessages {
   };
 
   nav: {
+    home: string;
+    search: string;
     vacancies: string;
     companies: string;
     articles: string;
@@ -87,6 +89,10 @@ export interface BaseMessages {
     heroTitle1: string;
     heroTitle2: string;
     heroSubtitle: string;
+    heroMobileTitle1: string;
+    heroMobileTitle2: string;
+    heroMobileSubtitle: string;
+    heroMobileBadge: string;
     searchPlaceholder: string;
     searchButton: string;
     statVacancies: string;

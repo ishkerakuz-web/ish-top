@@ -27,7 +27,7 @@ function DetailPage({ initial }: { initial: CompanyDetailData }) {
   const { state, retry, retrying } = useCompanyDetail(initial);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6 lg:pt-7">
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-5 lg:pt-7">
       <Breadcrumb title={state.kind === "ok" ? state.company.name : null} loading={state.kind === "loading"} />
       {state.kind === "ok" ? (
         <CompanyDetailView key={state.company.id} company={state.company} similar={state.similar} />
@@ -46,7 +46,7 @@ function Breadcrumb({ title, loading }: { title: string | null; loading: boolean
   const t = useT();
   const l = useHref();
   return (
-    <nav aria-label={t.companyDetail.breadcrumb} className="text-[13.5px] text-dusk">
+    <nav aria-label={t.companyDetail.breadcrumb} className="hidden text-[13.5px] text-dusk sm:block">
       <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <li>
           <a href={l("/")} className="rounded-sm transition-colors hover:text-signal">

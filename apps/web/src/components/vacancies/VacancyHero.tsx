@@ -11,13 +11,13 @@ export function VacancyHero({ total, children }: { total: number | null; childre
   const l = useHref();
 
   return (
-    <section className="relative pt-6 sm:pt-8">
+    <section className="relative pt-2 sm:pt-8">
       {/* juda yengil indigo dog' — sahifa "tekis oq" bo'lib qolmasin */}
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-72 w-[min(1100px,100%)] -translate-x-1/2 rounded-full bg-signal/[0.07] blur-3xl"
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="hidden sm:grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 self-center">
           <nav aria-label="Breadcrumb" className="text-sm text-dusk">
             <ol className="flex items-center gap-1.5">
@@ -42,7 +42,7 @@ export function VacancyHero({ total, children }: { total: number | null; childre
         </div>
         <VacancyPromoBanner />
       </div>
-      <div className="mt-6">{children}</div>
+      <div className="mt-0 sm:mt-6">{children}</div>
     </section>
   );
 }

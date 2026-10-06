@@ -87,9 +87,9 @@ export function VacancySearch({
         e.preventDefault();
         commit(text);
       }}
-      className="grid grid-cols-2 gap-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_minmax(0,14rem)_minmax(0,14rem)_auto]"
+      className="grid grid-cols-1 gap-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_minmax(0,14rem)_minmax(0,14rem)_auto]"
     >
-      <div className="col-span-2 flex h-14 min-w-0 items-center gap-3 rounded-2xl border border-line bg-surface pl-4 pr-2 shadow-card transition-colors focus-within:border-signal focus-within:ring-4 focus-within:ring-signal/10 sm:col-span-3 lg:col-span-1">
+      <div className="flex h-11 min-w-0 items-center gap-3 rounded-xl border border-line bg-surface pl-3.5 pr-2 transition-colors focus-within:border-signal focus-within:ring-4 focus-within:ring-signal/10 sm:col-span-3 sm:h-14 sm:rounded-2xl sm:pl-4 sm:shadow-card lg:col-span-1">
         <label htmlFor={`${id}-text`} className="sr-only">
           {s.label}
         </label>
@@ -137,26 +137,30 @@ export function VacancySearch({
         )}
       </div>
 
-      <FieldSelect
-        id={`${id}-region`}
-        label={s.region}
-        value={region.length === 1 ? region[0] : region.length > 1 ? MULTI : ""}
-        options={regionOptions}
-        onChange={(v) => v !== MULTI && onRegion(v)}
-        icon={<IconPin size={17} />}
-      />
-      <FieldSelect
-        id={`${id}-work`}
-        label={s.workType}
-        value={workType.length === 1 ? workType[0] : workType.length > 1 ? MULTI : ""}
-        options={workOptions}
-        onChange={(v) => v !== MULTI && onWorkType(v as WorkType | "")}
-        icon={<IconBriefcase size={17} />}
-      />
+      <div className="hidden sm:block">
+        <FieldSelect
+          id={`${id}-region`}
+          label={s.region}
+          value={region.length === 1 ? region[0] : region.length > 1 ? MULTI : ""}
+          options={regionOptions}
+          onChange={(v) => v !== MULTI && onRegion(v)}
+          icon={<IconPin size={17} />}
+        />
+      </div>
+      <div className="hidden sm:block">
+        <FieldSelect
+          id={`${id}-work`}
+          label={s.workType}
+          value={workType.length === 1 ? workType[0] : workType.length > 1 ? MULTI : ""}
+          options={workOptions}
+          onChange={(v) => v !== MULTI && onWorkType(v as WorkType | "")}
+          icon={<IconBriefcase size={17} />}
+        />
+      </div>
 
       <button
         type="submit"
-        className="col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-signal px-8 text-[15px] font-semibold text-white shadow-xs transition-colors hover:bg-signal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:col-span-1 sm:h-14"
+        className="hidden sm:inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-signal px-8 text-[15px] font-semibold text-white shadow-xs transition-colors hover:bg-signal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:col-span-1 sm:h-14"
       >
         <IconSearch size={18} />
         {s.submit}

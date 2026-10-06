@@ -38,6 +38,16 @@ export function AuthShell({
             </span>
           </a>
 
+          <div className="mt-5 flex flex-col items-center sm:items-start">
+            <div className="flex items-center gap-2.5">
+              <img src="/logo-108.webp" alt="" width={40} height={40} className="h-10 w-10 rounded-xl object-cover" />
+              <span className="font-display text-[22px] font-extrabold tracking-tight text-ink">
+                ISH BOR<span className="text-gold">!</span>
+              </span>
+            </div>
+            <span className="mt-2.5 block h-[3px] w-11 rounded-full bg-gold" aria-hidden />
+          </div>
+
           <div className="mt-4">{children}</div>
         </div>
 

@@ -182,7 +182,7 @@ function RoleCard({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-left text-[13.5px] font-semibold transition-all ${
+      className={`flex flex-col items-center gap-1.5 rounded-xl border px-3.5 py-3.5 text-[13.5px] font-semibold transition-all sm:flex-row sm:gap-2.5 sm:py-3 sm:text-left ${
         active
           ? "border-signal bg-signal-soft text-signal"
           : "border-line bg-surface text-dusk hover:border-signal/40 hover:text-ink"

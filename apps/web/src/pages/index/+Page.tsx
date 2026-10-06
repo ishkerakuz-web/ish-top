@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { useData } from "vike-react/useData";
 import type { data } from "./+data.js";
 import { SearchBar } from "../../components/SearchBar.js";
@@ -37,6 +37,31 @@ export default function Page() {
   // o'zining "bosh sahifasi"ga: xodim qidirish bo'limiga o'tadi
   useRedirectRole("employer", "/employer/candidates");
 
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const chipsPaused = useRef(false);
+
+  useEffect(() => {
+    const el = chipsRef.current;
+    if (!el) return;
+    let raf: number;
+    const step = () => {
+      if (!chipsPaused.current && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft += 0.5;
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth) {
+          el.scrollLeft = 0;
+        }
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const pauseChips = useCallback(() => { chipsPaused.current = true; }, []);
+  const resumeChips = useCallback(() => {
+    setTimeout(() => { chipsPaused.current = false; }, 2000);
+  }, []);
+
   return (
     <div>
       {/* HERO — tasdiqlangan referens: osmon fon, o'ngda foto, chapda kontent */}
@@ -45,45 +70,93 @@ export default function Page() {
           jonli fon sahifaning eng tepasidan boshlanadi — tepada shaffof turgan
           navbar fonning bir qismiga aylanadi, ikki qavat orasidagi chok yo'qoladi.
           Ichki `pt` esa kontentni header ostidan chiqarib turadi. */}
-      <section className="relative -mt-[76px] overflow-hidden pt-[76px]">
+      {/* ===== MOBILE HERO ===== */}
+      <section className="sm:hidden">
+        <div className="relative overflow-hidden rounded-b-3xl">
+          <img
+            src="/hero-cutout.webp"
+            alt=""
+            width={1400}
+            height={788}
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-top"
+          />
+          <div
+            className="absolute inset-0 dark:hidden"
+            style={{ background: "linear-gradient(180deg, rgba(237,233,254,0.82) 0%, rgba(237,233,254,0.6) 35%, rgba(237,233,254,0.88) 70%, rgba(237,233,254,0.95) 100%)" }}
+          />
+          <div
+            className="absolute inset-0 hidden dark:block"
+            style={{ background: "linear-gradient(180deg, rgba(11,17,32,0.82) 0%, rgba(11,17,32,0.6) 35%, rgba(11,17,32,0.85) 70%, rgba(11,17,32,0.95) 100%)" }}
+          />
+          <div className="relative z-10">
+            <div className="px-4 pb-8 pt-6">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/40 bg-amber-50/80 px-3 py-1.5 backdrop-blur-sm dark:border-amber-500/20 dark:bg-amber-950/30">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#F59E0B" aria-hidden><path d="M12 2.8l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7L12 2.8Z"/></svg>
+                <span className="text-xs font-semibold text-amber-800 dark:text-amber-300">{t.home.heroMobileBadge}</span>
+              </div>
+              <h1 className="mt-3 font-display text-[28px] font-extrabold leading-[1.1] tracking-tight text-ink">
+                {t.home.heroTitle1}<br />
+                <span className="bg-gradient-to-br from-emerald-500 via-emerald-400 to-emerald-600 bg-clip-text text-transparent">{t.home.heroTitle2}</span>
+              </h1>
+            </div>
+            <div className="px-4 pb-4">
+              <SearchBar />
+            </div>
+          </div>
+        </div>
+        <div
+          ref={chipsRef}
+          className="scrollbar-none mt-4 flex gap-2 overflow-x-auto px-4 pb-1"
+          onPointerDown={pauseChips}
+          onPointerUp={resumeChips}
+          onTouchStart={pauseChips}
+          onTouchEnd={resumeChips}
+        >
+          {CATEGORIES.slice(0, 5).map((c) => {
+            const hue = CHIP_HUES[c.slug] ?? CHIP_HUES.it;
+            return (
+              <a
+                key={c.slug}
+                href={l(`/vacancies?category=${c.slug}`)}
+                className="flex shrink-0 items-center gap-2 rounded-xl border border-line bg-surface py-2 pl-2 pr-3 shadow-xs"
+              >
+                <span style={{ background: hue.tint, color: hue.icon }} className="flex h-7 w-7 items-center justify-center rounded-lg">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>{CATEGORY_ICONS[c.slug] ?? CATEGORY_ICONS.it}</svg>
+                </span>
+                <span className="text-[13px] font-semibold text-ink/85">{names[c.slug]}</span>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===== DESKTOP HERO ===== */}
+      <section className="relative -mt-[76px] hidden overflow-hidden pt-[76px] sm:block">
         <HeroBackdrop />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-          {/* Yuqori qism — foto shu wrapperning pastiga langarlangan */}
           <div className="relative">
-            {/* O'ng foto blok: yigit + Toshkent minorasi + o'sish strelkasi.
-                Fon shaffof (bitta webp) — kunduzgi va tungi rejimga birdek
-                singiydi; chekkalarni hero-photo maskasi yumshatadi */}
             <img
               src="/hero-cutout.webp"
               alt=""
               width={1400}
               height={788}
-              loading="lazy"
               decoding="async"
-              className="hero-photo pointer-events-none absolute -right-2 bottom-0 hidden w-[760px] lg:block xl:w-[840px]"
+              className="hero-photo pointer-events-none absolute bottom-0 right-0 w-[320px] opacity-100 lg:-right-2 lg:w-[760px] xl:w-[840px]"
             />
 
-            {/* Chap kontent */}
-            <div className="relative z-[2] pt-10 sm:pt-14">
+            <div className="relative z-[2] pt-14">
               <div className="max-w-3xl">
-              <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-signal/20 bg-signal-soft/90 px-4 py-2">
-                <svg width="15" height="15" viewBox="0 0 24 24" className="fill-signal" aria-hidden>
-                  <path d="M12 2.8l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7L12 2.8Z" />
-                </svg>
-                <span className="text-[13.5px] font-semibold text-signal">{t.home.heroBadge}</span>
-              </span>
-
-              {/* CSS animatsiya — SSR paint bilanoq boshlanadi (LCP hidratsiyani kutmaydi) */}
               <h1
                 style={{ animationDelay: "40ms" }}
-                className="mt-4 animate-fade-up font-display text-[2.7rem] font-extrabold leading-[1.06] tracking-tight text-ink sm:text-6xl xl:text-[4.5rem]"
+                className="mt-4 animate-fade-up font-display text-6xl font-extrabold leading-[1.06] tracking-tight text-ink xl:text-[4.5rem]"
               >
                 {t.home.heroTitle1} <span className="block text-shine">{t.home.heroTitle2}</span>
               </h1>
 
               <p
                 style={{ animationDelay: "80ms" }}
-                className="mt-4 max-w-xl animate-fade-up text-base font-medium leading-relaxed text-dusk sm:text-lg"
+                className="mt-4 max-w-xl animate-fade-up text-lg font-medium leading-relaxed text-dusk"
               >
                 {t.home.heroSubtitle}
               </p>

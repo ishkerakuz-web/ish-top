@@ -72,5 +72,6 @@ export function resolveLocale(cookieHeader: string | null | undefined): Locale {
 export function persistLocale(locale: Locale): void {
   if (typeof document === "undefined") return;
   const oneYear = 60 * 60 * 24 * 365;
-  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${oneYear}; samesite=lax`;
+  const secure = location.protocol === "https:" ? "; secure" : "";
+  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${oneYear}; samesite=lax${secure}`;
 }

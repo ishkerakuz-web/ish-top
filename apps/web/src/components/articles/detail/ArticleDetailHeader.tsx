@@ -13,7 +13,7 @@ export function ArticleBreadcrumb({ title, loading }: { title: string | null; lo
   const t = useT();
   const l = useHref();
   return (
-    <nav aria-label={t.companyDetail.breadcrumb} className="text-[13.5px] text-dusk">
+    <nav aria-label={t.companyDetail.breadcrumb} className="hidden text-[13.5px] text-dusk sm:block">
       <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <li>
           <a href={l("/")} className="rounded-sm transition-colors hover:text-signal">

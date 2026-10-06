@@ -22,13 +22,7 @@ const EMPLOYMENT_SCHEMA: Record<string, string> = {
 /** schema.org: talab qilinadigan tajriba (oy). "Tajribasiz" — maydon qo'yilmaydi. */
 const EXPERIENCE_MONTHS: Record<string, number> = { one_to_three: 12, three_to_six: 36, six_plus: 72 };
 
-/** Meta description: so'z o'rtasida kesilmaydi. */
-function snippet(text: string, max = 155): string {
-  const flat = text.replace(/\s+/g, " ").trim();
-  if (flat.length <= max) return flat;
-  const cut = flat.slice(0, max - 1);
-  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max - 30))}…`;
-}
+import { snippet } from "../../../lib/seo/snippet.js";
 
 export default function Head() {
   const d = useData<Awaited<ReturnType<typeof data>>>();

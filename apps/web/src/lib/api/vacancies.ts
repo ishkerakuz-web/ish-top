@@ -8,27 +8,6 @@ import { mapVacancy } from "./mappers.js";
 // Vakansiyalar
 // ---------------------------------------------------------
 
-export interface VacancyQuery {
-  text?: string;
-  categorySlug?: string;
-  area?: string;
-  experience?: string;
-  employment?: string;
-  salary?: string;
-  salaryTo?: string;
-  /** Saralash: mosligi (default), sana yoki maosh bo'yicha. */
-  sort?: "relevance" | "date" | "salary_desc" | "salary_asc";
-}
-
-function buildQuery(params: VacancyQuery): string {
-  const qs = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value) qs.set(key, String(value));
-  }
-  const str = qs.toString();
-  return str ? `?${str}` : "";
-}
-
 /**
  * `/vacancies` sahifasining bitta sahifasi. `params` — API nomlaridagi
  * parametrlar (lib/vacancies/query.ts → toApiParams). "Natija yo'q" va

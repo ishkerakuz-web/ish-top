@@ -34,6 +34,7 @@
   --signal-text-strong: 67 56 202;
 
   --gold: 245 158 11; /* #F59E0B logo amberi — "!" va yulduzlar */
+  --gold-soft: 254 247 230; /* #FEF7E6 yengil oltinrang fon */
   /* audit R3, D-060 (a11y-ui-7): #B45309 gold/20 tinti ustida 4.32:1 edi.
      #9A4A08 — oq fonda 6.3:1, gold/15 da 5.6:1, gold/20 da 5.4:1 ✓ */
   --gold-deep: 154 74 8;
@@ -70,6 +71,7 @@
   --signal-text-strong: 199 210 254; /* #C7D2FE hover matni — 11.9:1 ✓ */
 
   --gold: 245 184 46; /* #F5B82E */
+  --gold-soft: 42 35 18; /* #2A2312 tungi oltinrang fon */
   --gold-deep: 240 192 96; /* #F0C060 — 9:1 ✓ */
   --growth: 61 206 143; /* #3DCE8F — 8:1 ✓ */
 
@@ -162,14 +164,20 @@ body {
 }
 
 .hero-photo {
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent 0, #000 110px, #000 calc(100% - 40px), transparent 100%),
-    linear-gradient(180deg, transparent 0, #000 28px, #000 78%, transparent 99%);
-  mask-image:
-    linear-gradient(90deg, transparent 0, #000 110px, #000 calc(100% - 40px), transparent 100%),
-    linear-gradient(180deg, transparent 0, #000 28px, #000 78%, transparent 99%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@media (min-width: 1024px) {
+  .hero-photo {
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0, #000 110px, #000 calc(100% - 40px), transparent 100%),
+      linear-gradient(180deg, transparent 0, #000 28px, #000 78%, transparent 99%);
+    mask-image:
+      linear-gradient(90deg, transparent 0, #000 110px, #000 calc(100% - 40px), transparent 100%),
+      linear-gradient(180deg, transparent 0, #000 28px, #000 78%, transparent 99%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
 }
 /* Tungi rejim: kunduzgi yorqin shahar tunga singishi uchun biroz xiralashadi */
 .dark .hero-photo {
@@ -260,11 +268,10 @@ body {
   background: radial-gradient(circle at 40% 40%, rgb(99 102 241 / 0.5), rgb(124 58 237 / 0.2) 55%, transparent 74%);
 }
 .orb-gold {
-  /* nom tarixiy — endi binafsha tuman */
-  background: radial-gradient(circle at 40% 40%, rgb(124 58 237 / 0.16), rgb(124 58 237 / 0.06) 55%, transparent 72%);
+  background: radial-gradient(circle at 40% 40%, rgb(245 158 11 / 0.13), rgb(245 158 11 / 0.05) 55%, transparent 72%);
 }
 .dark .orb-gold {
-  background: radial-gradient(circle at 40% 40%, rgb(139 92 246 / 0.42), rgb(139 92 246 / 0.16) 55%, transparent 74%);
+  background: radial-gradient(circle at 40% 40%, rgb(245 184 46 / 0.3), rgb(245 184 46 / 0.1) 55%, transparent 74%);
 }
 .orb-rose {
   background: radial-gradient(circle at 40% 40%, rgb(225 29 72 / 0.12), rgb(190 24 93 / 0.05) 55%, transparent 72%);
@@ -332,12 +339,12 @@ body {
   box-shadow: 0 0 14px 3px rgb(129 140 248 / 0.65);
 }
 .particle-gold {
-  background: rgb(236 72 153 / 0.75);
-  box-shadow: 0 0 12px 2px rgb(236 72 153 / 0.4);
+  background: rgb(245 158 11 / 0.8);
+  box-shadow: 0 0 12px 2px rgb(245 158 11 / 0.45);
 }
 .dark .particle-gold {
-  background: rgb(249 168 212 / 0.95);
-  box-shadow: 0 0 14px 3px rgb(244 114 182 / 0.6);
+  background: rgb(245 184 46 / 0.95);
+  box-shadow: 0 0 14px 3px rgb(245 184 46 / 0.6);
 }
 
 /* Logo atrofida kengayib so'nuvchi halqa (premium puls) */
@@ -395,7 +402,7 @@ body {
   bottom: 0;
   left: 0;
   width: 40%;
-  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  background: linear-gradient(100deg, transparent, rgb(255 248 230 / 0.4), transparent);
   transform: translateX(-150%) skewX(-18deg);
   transition: transform 0.55s ease;
   pointer-events: none;
@@ -454,10 +461,25 @@ body {
   right: 0;
   height: 2px;
   z-index: 60;
-  background: linear-gradient(90deg, #2563EB, #7C3AED, #EC4899);
+  background: linear-gradient(90deg, #F59E0B, #4F46E5, #7C3AED, #EC4899);
   transform: scaleX(0);
   transform-origin: left;
   pointer-events: none;
+}
+
+/* Dome bottom nav — aktiv tab uchun suzuvchi doira */
+.dome-glow {
+  background: radial-gradient(circle, rgba(67,56,202,0.12) 30%, transparent 70%);
+}
+.dark .dome-glow {
+  background: radial-gradient(circle, rgba(91,82,234,0.2) 30%, transparent 70%);
+}
+.dome-circle {
+  background: linear-gradient(145deg, #5B6CF0 0%, #4338CA 100%);
+  box-shadow: 0 6px 20px -2px rgba(67,56,202,0.3), 0 2px 6px rgba(0,0,0,0.06);
+}
+.dark .dome-circle {
+  box-shadow: 0 6px 20px -2px rgba(91,82,234,0.4), 0 2px 6px rgba(0,0,0,0.15);
 }
 
 /* Skeleton shimmer */

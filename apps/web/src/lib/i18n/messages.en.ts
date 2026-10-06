@@ -51,6 +51,8 @@ const base: BaseMessages = {
     notFound: { title: "Page not found | ISH BOR!", description: "The page you requested was not found." },
   },
   nav: {
+    home: "Home",
+    search: "Search",
     vacancies: "Vacancies",
     companies: "Companies",
     articles: "Articles",
@@ -100,6 +102,10 @@ const base: BaseMessages = {
     heroTitle2: "next step?",
     heroSubtitle:
       "Active vacancies across Uzbekistan. Build a resume, find the right job and apply in a few clicks.",
+    heroMobileTitle1: "Start your future",
+    heroMobileTitle2: "today",
+    heroMobileSubtitle: "Thousands of vacancies — find the right job for you",
+    heroMobileBadge: "#1 job portal in Uzbekistan",
     searchPlaceholder: "Profession, position or company name",
     searchButton: "Search",
     statVacancies: "active vacancies",

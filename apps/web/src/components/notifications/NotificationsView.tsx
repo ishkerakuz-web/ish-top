@@ -199,7 +199,7 @@ export function NotificationsView({ center, role, token }: { center: Notificatio
   const loading = !center || center.status === "loading";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-14 pt-5 sm:px-6 sm:pt-7">
+    <div className="mx-auto max-w-7xl px-4 pb-14 pt-2 sm:px-6 sm:pt-7">
       <div className={NOTIFICATIONS_LAYOUT}>
         <div className="min-w-0">
           <NotificationsHeader unreadCount={ready ? unreadCount : null} />

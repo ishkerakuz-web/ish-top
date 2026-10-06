@@ -109,7 +109,7 @@ const app = Fastify({
     },
   },
   // Reverse-proxy (nginx/caddy) ortida turganda haqiqiy IP va protokol.
-  trustProxy: true,
+  trustProxy: Number(process.env.TRUST_PROXY ?? 1),
 });
 
 // Siqish: brotli birinchi, keyin gzip. 1 KB dan kichik javoblarni siqish

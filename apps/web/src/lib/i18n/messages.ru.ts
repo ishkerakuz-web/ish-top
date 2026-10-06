@@ -52,6 +52,8 @@ const base: BaseMessages = {
     notFound: { title: "Страница не найдена | ISH BOR!", description: "Запрашиваемая страница не найдена." },
   },
   nav: {
+    home: "Главная",
+    search: "Поиск",
     vacancies: "Вакансии",
     companies: "Компании",
     articles: "Статьи",
@@ -101,6 +103,10 @@ const base: BaseMessages = {
     heroTitle2: "следующий шаг?",
     heroSubtitle:
       "Активные вакансии по всему Узбекистану. Создайте резюме, найдите подходящую работу и откликнитесь в пару кликов.",
+    heroMobileTitle1: "Начните своё будущее",
+    heroMobileTitle2: "сегодня",
+    heroMobileSubtitle: "Тысячи вакансий — найдите подходящую работу",
+    heroMobileBadge: "Портал #1 в Узбекистане",
     searchPlaceholder: "Профессия, должность или название компании",
     searchButton: "Найти",
     statVacancies: "активных вакансий",
