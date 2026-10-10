@@ -107,7 +107,7 @@ export default function Page() {
           </h2>
           <p className="relative mx-auto mt-2 max-w-sm text-dusk">{t.employerLanding.bottomDesc}</p>
           <a
-            href={l("/signup")}
+            href={l("/signup?role=employer")}
             className="relative mt-6 inline-block rounded-xl bg-signal px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-signal-dark active:scale-[0.98]"
           >
             {t.employerLanding.bottomCta}
