@@ -54,11 +54,12 @@ export function MessageComposer({
       }}
       className="border-t border-line bg-surface p-3 sm:px-4"
     >
-      {/* Fokusda faqat fon ravshanlashadi. Ilgari bu yerda `ring-2` + ko'k chegara
-          bor edi — kursor qo'yilishi bilan maydon atrofida qattiq ko'k to'rtburchak
-          paydo bo'lardi va yozishmani bo'lib yuborardi. Fokus baribir bilinadi:
-          kursor chaqnaydi, yuborish tugmasining o'z halqasi bor. */}
-      <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface-2/50 p-1.5 pl-3 transition-colors focus-within:bg-surface">
+      {/* Fokus belgisi O'RAB TURGAN blokda: fon ravshanlashadi va mavjud chegara
+          rangi biroz quyuqlashadi. Ichkarida hech qanday ramka chizilmaydi —
+          ilgari `ring-2` va global `:focus-visible` outline'i maydon ustiga
+          qattiq ko'k to'rtburchak chizib, yozishmani bo'lib yuborardi
+          (global qoida `styles/global.css` da matn maydonlari uchun chetlatildi). */}
+      <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface-2/50 p-1.5 pl-3 transition-colors focus-within:border-signal/40 focus-within:bg-surface">
         <label htmlFor={inputId} className="sr-only">
           {m.composer.label}
         </label>

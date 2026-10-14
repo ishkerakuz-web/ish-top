@@ -660,3 +660,24 @@ body {
   outline: 2px solid rgb(var(--focus));
   outline-offset: 2px;
 }
+
+/* ...LEKIN matn kiritiladigan maydonlar bundan mustasno.
+
+   Brauzer `input`, `textarea` va `select` ni SICHQONCHA bilan bosilganda ham
+   `:focus-visible` deb hisoblaydi (ular klaviatura kutadi — spetsifikatsiya
+   shunday). Shu sababli yuqoridagi qoida ular uchun "klaviatura uchun zaxira"
+   emas, DOIMIY ko'k to'rtburchakka aylanardi: maydonning o'z dizayni ustiga,
+   ichkarida, 2px indigo ramka chizilardi. Xabar yozish maydonida bu ayniqsa
+   xunuk ko'rinardi.
+
+   Fokus baribir ko'rinmay qolmaydi — loyihadagi har bir matn maydoni fokusni
+   o'zi ko'rsatadi: yo o'zida (`focus:border-signal`, `focus:ring-4`), yo uni
+   o'rab turgan blokda (`focus-within:border-signal`). Tugmalar, havolalar va
+   maxsus boshqaruvlar uchun yuqoridagi qoida o'z kuchida qoladi, chunki ularda
+   `:focus-visible` faqat klaviatura bilan ishlaganda yuzaga keladi. */
+:root input.focus\:outline-none:focus-visible,
+:root textarea.focus\:outline-none:focus-visible,
+:root select.focus\:outline-none:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
