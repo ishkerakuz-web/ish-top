@@ -101,8 +101,12 @@ export function AuthField({
           inputMode={inputMode}
           aria-invalid={invalid || undefined}
           aria-describedby={described || undefined}
+          // Xato holatida chegara qizil bo'lib qoladi, ya'ni fokusda rangi
+          // o'zgarmaydi — yagona belgi fon edi. `ContactField` dagi konvensiya
+          // bo'yicha yumshoq halqa qo'shildi, shunda klaviatura fokusi xato
+          // holatida ham ko'rinadi (o'lcham, radius va padding o'zgarmagan).
           className={`h-11 w-full rounded-xl border bg-surface-2 pl-11 pr-3.5 text-sm text-ink transition-colors placeholder:text-dusk focus:bg-surface focus:outline-none ${
-            invalid ? "border-danger focus:border-danger" : "border-line focus:border-signal"
+            invalid ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10" : "border-line focus:border-signal"
           }`}
         />
       </div>
@@ -164,7 +168,7 @@ export function PasswordField({
           aria-invalid={invalid || undefined}
           aria-describedby={described || undefined}
           className={`h-11 w-full rounded-xl border bg-surface-2 pl-11 pr-12 text-sm text-ink transition-colors placeholder:text-dusk focus:bg-surface focus:outline-none ${
-            invalid ? "border-danger focus:border-danger" : "border-line focus:border-signal"
+            invalid ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10" : "border-line focus:border-signal"
           }`}
         />
         <button

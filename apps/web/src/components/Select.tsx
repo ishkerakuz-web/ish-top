@@ -194,10 +194,21 @@ export function Select({
     };
   }, [open]);
 
-  // Qidiruv maydoni ochilishi bilan fokusni oladi
+  // Qidiruv maydoni ochilishi bilan fokusni oladi. Ro'yxat faqat `pos`
+  // o'lchangach chiziladi, shuning uchun `open` o'zgargan paytda maydon hali
+  // DOM'da bo'lmaydi — `pos` ham bog'liqlikka kiradi. Scroll paytida `measure()`
+  // yangi `pos` bergani uchun effekt qayta ishlaydi, ammo bayroq bir ochilishda
+  // fokusni faqat bir marta berishni kafolatlaydi (aks holda fokus o'g'irlanadi).
+  const searchFocused = useRef(false);
   useEffect(() => {
-    if (open && withSearch) inputRef.current?.focus();
-  }, [open, withSearch]);
+    if (!open) {
+      searchFocused.current = false;
+      return;
+    }
+    if (!withSearch || searchFocused.current || !inputRef.current) return;
+    searchFocused.current = true;
+    inputRef.current.focus();
+  }, [open, withSearch, pos]);
 
   // Faol variant ko'rinib tursin (silliq scroll emas — reduced motion)
   useEffect(() => {
@@ -351,7 +362,11 @@ export function Select({
                   aria-autocomplete="list"
                   aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
                   aria-label={searchPlaceholder}
-                  className="h-9 w-full rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink outline-none transition-colors placeholder:text-dusk focus:border-signal"
+                  // `outline-none` emas, `focus:outline-none`: global `:focus-visible`
+                  // qoidasi faqat shu variantda matn maydonlari uchun chetlatiladi
+                  // (styles/global.css), aks holda maydon ichida ko'k to'rtburchak chiziladi.
+                  // Fokus belgisi chegara rangida — qolgan maydonlar bilan bir xil.
+                  className="h-9 w-full rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink transition-colors placeholder:text-dusk focus:border-signal focus:outline-none"
                 />
               </div>
             )}
