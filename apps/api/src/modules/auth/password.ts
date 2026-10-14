@@ -41,7 +41,10 @@ export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 128;
 
 /** Ro'yxatdan o'tish, taklifni qabul qilish va parolni tiklash uchun umumiy maydon. */
-export const passwordField = z.string().min(PASSWORD_MIN).max(PASSWORD_MAX);
+export const passwordField = z
+  .string()
+  .min(PASSWORD_MIN, `Parol kamida ${PASSWORD_MIN} belgidan iborat bo'lishi kerak`)
+  .max(PASSWORD_MAX, `Parol ${PASSWORD_MAX} belgidan oshmasligi kerak`);
 
 /**
  * Juda oson topiladigan parolni rad etadi. `email` berilsa, parol email yoki uning

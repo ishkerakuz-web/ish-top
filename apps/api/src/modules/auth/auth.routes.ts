@@ -12,17 +12,17 @@ import { phoneRoutes } from "./phone.routes.js";
 
 // Uzunliklar cheklangan (audit ISSUE-044): cheksiz parol argon2'ga, cheksiz ism bazaga ketardi
 const registerSchema = z.object({
-  email: z.string().trim().email().max(254),
+  email: z.string().trim().email("Email manzil noto'g'ri").max(254, "Email juda uzun"),
   password: passwordField,
-  role: z.enum(["job_seeker", "employer"]),
-  firstName: z.string().trim().max(60).optional(),
-  lastName: z.string().trim().max(60).optional(),
-  companyName: z.string().trim().max(160).optional(),
+  role: z.enum(["job_seeker", "employer"], { message: "Rol noto'g'ri" }),
+  firstName: z.string().trim().max(60, "Ism juda uzun").optional(),
+  lastName: z.string().trim().max(60, "Familiya juda uzun").optional(),
+  companyName: z.string().trim().max(160, "Kompaniya nomi juda uzun").optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().trim().email().max(254),
-  password: z.string().min(1).max(128),
+  email: z.string().trim().email("Email manzil noto'g'ri").max(254),
+  password: z.string().min(1, "Parol kiritilishi shart").max(128),
 });
 
 /**
